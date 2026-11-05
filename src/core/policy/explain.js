@@ -4,8 +4,11 @@
 // Never produced by a language model (the product spec rules this out): a model
 // would read untrusted text and could state something false about a security
 // decision. Everything here is a string template plus facts the engine computed.
-import { isTrusted } from '../labels/index.js';
+import { isPrivate, isTrusted } from '../labels/index.js';
 import { previewValue } from '../preview.js';
+
+/** Matches the audit log's limit for a private destination or selector (src/runtime/audit.js). */
+const PRIVATE_QUOTE_LIMIT = 60;
 
 /**
  * Where a value came from, in words.
@@ -138,7 +141,10 @@ export function explainDecision(decision, context) {
   for (const [name, value] of Object.entries(context.args)) {
     args[name] = {
       name,
-      preview: previewValue(value, 80),
+      // The explanation is saved in the audit log with the step, so a private value is
+      // quoted no more than the log's own limit for a private destination or target
+      // (src/runtime/audit.js). Longer previews live only on the transient approval card.
+      preview: previewValue(value, isPrivate(value.label) ? PRIVATE_QUOTE_LIMIT : 80),
       origin: describeOrigin(value.label),
       trusted: isTrusted(value.label),
       readers: describeReaders(value.label),

@@ -87,6 +87,8 @@ includes the seed so the exact graph can be replayed.
 | Failure paths: the pause cannot be recorded (approval withdrawn, nothing sent), the final save fails, an unreachable live model, memory bounded for many runs; the evaluation's worst-case model and undefended agent | `test/integration/failurePaths.test.js`, `test/unit/evalSupport.test.js` |
 | **Local-only protection**: DNS rebinding (hostile Host), cross-site requests (foreign, `null` and mismatched-port Origin), accepted own origin and no-Origin clients | `test/security/localOnly.test.js` |
 
+| **Audit privacy from every direction** (found in the final audit): private text used as a destination or a selector, in policy explanations and in tool errors, bounded to the documented preview limit; error messages never quote arguments; a run cancelled while planning stays cancelled | `test/security/auditLeakage.test.js`, `test/unit/fakeTools.test.js`, `test/unit/interpreter.test.js` |
+
 The end-to-end scenarios requested in the project brief map to tests as follows:
 
 | Scenario                   | Test                                                                                  |

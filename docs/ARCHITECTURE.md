@@ -230,8 +230,16 @@ labels of what it returns. Anything a tool cannot vouch for is untrusted.
 
 Every tool invocation goes through one function, `invokeTool(call, decision)`.
 It refuses to run unless `decision` was minted by the policy engine for exactly
-this call (tool and argument identities). Tool adapters are not exported
-anywhere else. A regression test tries to bypass it.
+this call (tool and argument identities).
+
+Where the adapters are reachable from, precisely: `createFakeTools(world)` builds the
+adapter table. In the application it is handed only to `createToolInvoker`, which is
+the sole caller of `consumeAuthorization` (`composition.js` and the run service). The
+one other caller is the evaluation (`src/eval/defences.js`), where the two **baseline
+defences deliberately call the fake tools directly**, because they model an agent
+_without_ deadLetter; they run on their own throwaway fake world and never touch a
+real run. The deadLetter defence inside the evaluation goes through the same run
+service and invoker as the app. Regression tests attack the token path directly.
 
 ### Models and providers
 

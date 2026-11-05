@@ -181,9 +181,13 @@ export async function runPlan(planInput, ctx) {
     try {
       spec = await invokeTool(step.tool, finalArgs, decision.authorization);
     } catch (err) {
+      // Only messages written for the user are passed on (a tool's own refusal or a
+      // rejected authorization). Anything else, such as an unexpected exception, could
+      // contain paths, argument text or internals, and is replaced.
+      const known = err?.name === 'ToolError' || err?.name === 'UnauthorizedToolCall';
       throw fail(
         'tool_error',
-        `The ${tool.title.toLowerCase()} tool failed: ${String(err?.message).slice(0, 200)}`,
+        `The ${tool.title.toLowerCase()} tool failed: ${known ? String(err.message).slice(0, 200) : 'an unexpected error'}`,
       );
     }
     const result = store.fromTool(spec, {

@@ -160,6 +160,15 @@ Attack outcomes: _succeeded_ (the attacker's goal was reached), _blocked_ (a gua
 The tests assert the _exact_ results above. If a change to the engine alters one,
 the suite fails, and the change and this document must be updated knowingly.
 
+## A note on what a report contains
+
+An evaluation report records, for every run, the actions taken and where each one went,
+including the attacker's addresses and URLs. In the unprotected runs that includes the
+**fake** private seed data (the canary strings) that the attacker's step carried out,
+because showing that data leave is the point. This is the evaluation's own fake world,
+not a user's audit log, and it is stored with the report. Real run history keeps only
+short previews (see [THREAT_MODEL.md](THREAT_MODEL.md), A11).
+
 ## Reproducing
 
 ```bash

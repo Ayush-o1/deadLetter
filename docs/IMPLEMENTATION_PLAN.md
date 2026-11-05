@@ -1,5 +1,9 @@
 # Implementation plan
 
+File names in the part tables below were written before the code existed; where the
+built layout differs they have been corrected to the real files (see also
+[ARCHITECTURE.md](ARCHITECTURE.md)).
+
 Source of truth for scope: `deadLetter The Product Explained Before You Build.pdf`
 (the 11 essential and 9 strongly recommended features). Optional features are not
 started until all 20 work.
@@ -60,12 +64,12 @@ stack traces.
 
 Parts (combined 2.1+2.2 because a value without provenance is meaningless):
 
-| Part                    | Tasks                                                                                                             | Files                                                          |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| 2.1 Values + provenance | `Value` (id, data, label, parents, origin, op), immutability, id generation                                       | `src/core/labels/value.js`                                     |
-| 2.2 Labels + lattice    | integrity, readers (public / finite set), join, restrictiveness, serialization                                    | `src/core/labels/label.js`                                     |
-| 2.3 Propagation         | `derive(parents, data, op)`, control-label merge, label creation only via trusted constructors                    | `src/core/labels/propagate.js`                                 |
-| 2.4 Independent checker | second implementation that recomputes labels from the provenance graph's leaves; seeded random-DAG property tests | `test/reference/labelChecker.js`, `test/unit/labels.*.test.js` |
+| Part                    | Tasks                                                                                                             | Files                                                             |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 2.1 Values + provenance | `Value` (id, data, label, parents, origin, op), immutability, id generation                                       | `src/core/labels/value.js`                                        |
+| 2.2 Labels + lattice    | integrity, readers (public / finite set), join, restrictiveness, serialization                                    | `src/core/labels/label.js`                                        |
+| 2.3 Propagation         | `derive(parents, data, op)`, control-label merge, label creation only via trusted constructors                    | `src/core/labels/provenance.js` (`derive`, `literal`, `fromTool`) |
+| 2.4 Independent checker | second implementation that recomputes labels from the provenance graph's leaves; seeded random-DAG property tests | `test/reference/labelChecker.js`, `test/unit/labels.*.test.js`    |
 
 Exit: unit tests for creation, propagation, restrictive edge cases (empty reader
 set, public ∩ set, untrusted parent among many, deep chains); checker and
@@ -78,7 +82,7 @@ implementation agree on thousands of random graphs.
 | 3.1 Plan schema + validation | strict zod schema, op allow-list, variable scoping, limits, grounding rule, no reserved keys                                  | `src/core/plan/schema.js`, `validate.js` |
 | 3.2 Plan preview             | plan → plain-language steps                                                                                                   | `src/core/plan/describe.js`              |
 | 3.3 Interpreter core         | environment, expression evaluation, `call` / `quarantine` / `show`, step state machine, injected `authorize` and `invokeTool` | `src/core/interpreter/`                  |
-| 3.4 Control flow             | `if` / `for_each`, control label, strict propagation, loop caps                                                               | `src/core/interpreter/control.js`        |
+| 3.4 Control flow             | `if` / `for_each`, control label, strict propagation, loop caps                                                               | `src/core/interpreter/interpreter.js`    |
 
 Exit: malformed plans, unknown ops, bad refs, ungrounded literals all rejected;
 untrusted conditions cannot make a call run silently (test with a stub
@@ -86,13 +90,13 @@ authorizer that records the control label it was handed).
 
 ## Phase 4 — Policy engine and approval ☑
 
-| Part                               | Tasks                                                                         | Files                                                     |
-| ---------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------- |
-| 4.1 Tool metadata                  | argument roles (`destination`, `selector`, `data`, `plain`), side-effect kind | `src/core/tools/registry.js`                              |
-| 4.2 Policy engine                  | floor + templates, matrix, severity merge, decision object                    | `src/core/policy/engine.js`, `templates.js`               |
-| 4.3 Explanations                   | fixed templates filled with real values (trigger, origin, rule, next step)    | `src/core/policy/explain.js`                              |
-| 4.4 Decision tokens + `invokeTool` | tokens minted only by the engine and bound to tool + argument ids             | `src/core/policy/decision.js`, `src/core/tools/invoke.js` |
-| 4.5 Approval state machine         | pending / approved / edited / rejected / expired; trust additions             | `src/runtime/approvals.js`                                |
+| Part                               | Tasks                                                                         | Files                                                          |
+| ---------------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| 4.1 Tool metadata                  | argument roles (`destination`, `selector`, `data`, `plain`), side-effect kind | `src/core/tools/catalog.js`, `specs.js`                        |
+| 4.2 Policy engine                  | floor + templates, matrix, severity merge, decision object                    | `src/core/policy/engine.js`, `templates.js`                    |
+| 4.3 Explanations                   | fixed templates filled with real values (trigger, origin, rule, next step)    | `src/core/policy/explain.js`                                   |
+| 4.4 Decision tokens + `invokeTool` | tokens minted only by the engine and bound to tool + argument ids             | `src/core/policy/authorization.js`, `src/core/tools/invoke.js` |
+| 4.5 Approval state machine         | pending / approved / edited / rejected / expired; trust additions             | `src/runtime/approvals.js`                                     |
 
 Exit: exhaustive matrix test (every destination × data × control-label ×
 template combination); unknown/disabled tools tested; direct tool invocation
@@ -105,7 +109,7 @@ without a token fails.
 | 5.1 Fake tools + fixtures        | contacts, email, files, web, outbox; labels assigned by adapters | `src/core/tools/*.js`, `src/core/tools/fixtures/` |
 | 5.2 Planner interface + mock     | input is `{request, toolCatalog}` only; plan validated on return | `src/core/models/planner.js`, `providers/mock.js` |
 | 5.3 Quarantined interface + mock | typed output, schema-checked, failure fails the step             | `src/core/models/quarantine.js`                   |
-| 5.4 Live provider adapter        | OpenAI-compatible HTTP, timeouts, structured output validation   | `src/core/models/providers/http.js`               |
+| 5.4 Live provider adapter        | OpenAI-compatible HTTP, timeouts, structured output validation   | `src/core/models/providers/openaiCompatible.js`   |
 
 Exit: tests prove the planner function never receives tool results (spy);
 malformed model output and provider failures fail closed; no network in tests.
@@ -124,13 +128,13 @@ never appear in audit output.
 
 ## Phase 7 — Evaluation framework ☑
 
-| Part                            | Tasks                                                                            | Files                                   |
-| ------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------- |
-| 7.1 Scenario format + fixtures  | attacks (email, web, file, control flow, tool selection) and benign tasks        | `src/eval/scenarios/*.json`             |
-| 7.2 Three defences, one harness | `none`, `session_taint`, `deadletter`                                            | `src/eval/defences/`                    |
-| 7.3 Runner + metrics            | attack success rate, benign completion rate, ask/deny counts, false-block list   | `src/eval/runner.js`, `metrics.js`      |
-| 7.4 Checks                      | leakage check (canary at egress), metamorphic tests, clean-vs-attacked diff data | `src/eval/leakage.js`, `test/security/` |
-| 7.5 Reports                     | deterministic JSON + Markdown export, `npm run eval`                             | `src/eval/report.js`                    |
+| Part                            | Tasks                                                                            | Files                                                    |
+| ------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| 7.1 Scenario format + fixtures  | attacks (email, web, file, control flow, tool selection) and benign tasks        | `src/eval/scenarios/*.json`                              |
+| 7.2 Three defences, one harness | `none`, `session_taint`, `deadletter`                                            | `src/eval/defences.js`, `guards.js`, `baselineAgent.js`  |
+| 7.3 Runner + metrics            | attack success rate, benign completion rate, ask/deny counts, false-block list   | `src/eval/runner.js`, `metrics.js`                       |
+| 7.4 Checks                      | leakage check (canary at egress), metamorphic tests, clean-vs-attacked diff data | `src/eval/predicates.js` (`findLeaks`), `test/security/` |
+| 7.5 Reports                     | deterministic JSON + Markdown export, `npm run eval`                             | `src/eval/report.js`                                     |
 
 Exit: numbers come only from executed runs; the metamorphic test passes
 (rewording the injection leaves the permitted action set unchanged); both
@@ -183,7 +187,7 @@ from the real UI, and a clean-clone check that follows the README from scratch.
 | Integration            | planner→interpreter, interpreter→policy, policy→tools, approval resume, persistence, audit                                                                                                                            | `node:test` + test database              |
 | End to end             | normal summarise, malicious email, malicious web page, private file leak, approval-required task, benign task                                                                                                         | full runner with mock models             |
 | Security regression    | untrusted destination / tool / action selection, missing rule, unknown tool, malformed model output, quarantine failure, planner failure, private data in audit, tool call without a decision, untrusted control flow | one file per concern in `test/security/` |
-| Metamorphic            | change only the attack wording or content; the plan and the permitted action set must be unchanged                                                                                                                    | `test/security/metamorphic.test.js`      |
+| Metamorphic            | change only the attack wording or content; the plan and the permitted action set must be unchanged                                                                                                                    | `test/eval/metamorphic.test.js`          |
 
 Rules: no assertion is weakened to turn a test green; every security-relevant
 behaviour has a regression test; tests never need a network model.

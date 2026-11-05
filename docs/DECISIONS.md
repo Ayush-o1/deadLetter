@@ -242,7 +242,8 @@ Choice. The dashboard has two horizontal bar charts as plain SVG, no chart libra
 follow the charting guidance the project adopted: thin bars with a rounded data end
 anchored at the baseline, a recessive grid, a direct label on every bar with the count
 behind the percentage, text in ink rather than series colour, series colours checked for
-colour-blind separation (`scripts/validate_palette.js`: orange, blue, aqua), a hatched
+colour-blind separation (orange, blue and aqua passed a separation check; the checker
+itself is an external tool and is not part of this repository), a hatched
 texture on the "user approves everything" bar so it is not distinguished by colour alone,
 and a table view of every chart. A percentage is never shown without its denominator.
 

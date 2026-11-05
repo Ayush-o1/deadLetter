@@ -169,6 +169,10 @@ export function createRunService({
     // The planner is called with the request and nothing else. No world, no store,
     // no tool output exists yet.
     const planned = await planner(request);
+    // The run may have been cancelled while the planner was thinking (a live model can
+    // be slow). A cancelled run stays cancelled: the late plan is discarded, never
+    // attached, and the run cannot be started.
+    if (record.status !== 'planning') return snapshot(rt);
     if (planned.ok) {
       record.status = 'planned';
       record.plan = planned.plan;

@@ -213,8 +213,10 @@ to the template's answer if that is stricter.
 Every decision carries an explanation built from fixed templates (never from a
 model): a headline (`Blocked: Send email to “kim@promo-offers.example”`), the
 reasons (which value, where it came from), the rule in words, and what the user
-can do next. Previews are at most 80 characters and cover only the arguments
-that triggered a rule, never message bodies.
+can do next. Previews cover only the arguments
+that triggered a rule, never message bodies. They are at most 80 characters, and at
+most 60 when the quoted value is private: the explanation is saved with the step, so
+it obeys the audit log's own limit (`src/runtime/audit.js`).
 
 ### From ask to execution
 

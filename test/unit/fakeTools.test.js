@@ -85,11 +85,11 @@ test('files: private files are readable by the user only; the fixture decides tr
 
 test('files: a missing file is an error; delete removes it and is recorded', () => {
   const { tools, world } = fresh();
-  assert.throws(() => tools.read_file({ path: 'nope.txt' }), /No file/);
+  assert.throws(() => tools.read_file({ path: 'nope.txt' }), /No such file/);
   tools.delete_file({ path: 'notes.txt' });
-  assert.throws(() => tools.read_file({ path: 'notes.txt' }), /No file/);
+  assert.throws(() => tools.read_file({ path: 'notes.txt' }), /No such file/);
   assert.deepEqual(world.egress.at(-1), { kind: 'delete', target: 'notes.txt' });
-  assert.throws(() => tools.delete_file({ path: 'notes.txt' }), /No file/);
+  assert.throws(() => tools.delete_file({ path: 'notes.txt' }), /No such file/);
 });
 
 test('web: pages are untrusted and public; every fetch is recorded as leaving the machine', () => {
@@ -132,4 +132,24 @@ test('the seed dataset has a recognisable canary in every private file', () => {
 test('malformed fixtures are rejected', () => {
   assert.throws(() => createWorld({ contacts: [], emails: [], files: [{ path: 'a' }], pages: [] }));
   assert.throws(() => createWorld(null));
+});
+
+test('tool error messages never quote the argument that caused them', () => {
+  const { tools } = fresh();
+  const secret = 'SECRET-ARGUMENT-TEXT';
+  const attempts = [
+    () => tools.lookup_contact({ name: secret }),
+    () => tools.read_email({ from: secret }),
+    () => tools.read_file({ path: secret }),
+    () => tools.delete_file({ path: secret }),
+    () => tools.fetch_url({ url: `https://example.org/${secret}` }),
+    () => tools.send_email({ to: secret, subject: 's', body: 'b' }),
+  ];
+  for (const attempt of attempts) {
+    assert.throws(
+      attempt,
+      (err) => err instanceof ToolError && !err.message.includes(secret),
+      String(attempt),
+    );
+  }
 });

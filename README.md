@@ -160,6 +160,8 @@ Notable engineering choices (each has a reasoned entry in
   provenance graphs.
 - A tool runs only with a **single-use authorization token** bound to the exact call, so
   "every call goes through the policy engine" is something a test attacks, not a convention.
+  (The Lab's two baseline defences deliberately call the fake tools directly: they model
+  an agent _without_ deadLetter, on a throwaway fake world.)
 - The audit record is written **before** the action it describes; if storage fails, the
   action does not happen. The log holds labels and short previews, never whole private text.
 - The security tests were checked by **deliberately breaking the code** and confirming they

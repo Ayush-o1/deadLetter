@@ -15,6 +15,9 @@
 import { z } from 'zod';
 import { createLabel, list, record, restricted, scalar } from '../labels/index.js';
 
+// Messages of a ToolError are shown to the user and saved in the audit log, so they
+// must never quote an argument: the argument may be private text (a file name taken
+// from a private note, a URL built from private data).
 export class ToolError extends Error {
   constructor(message) {
     super(message);
@@ -80,7 +83,7 @@ export function createFakeTools(world) {
       const found = world.contacts.find(
         (c) => norm(c.name) === norm(name) || norm(c.email) === norm(name),
       );
-      if (!found) throw new ToolError(`No contact named "${name.slice(0, 60)}"`);
+      if (!found) throw new ToolError('No contact with that name');
       const label = createLabel({ integrity: 'trusted', sources: ['contacts'] });
       return record({ name: scalar(found.name, label), email: scalar(found.email, label) });
     },
@@ -90,7 +93,7 @@ export function createFakeTools(world) {
       const matches = world.emails
         .filter((m) => norm(m.from) === norm(from) || norm(m.fromName) === norm(from))
         .sort((a, b) => b.date.localeCompare(a.date));
-      if (matches.length === 0) throw new ToolError(`No email from "${from.slice(0, 60)}"`);
+      if (matches.length === 0) throw new ToolError('No email from that sender');
       return which === 'all' ? list(matches.map(emailRecord)) : emailRecord(matches[0]);
     },
 
@@ -108,7 +111,7 @@ export function createFakeTools(world) {
     read_file(input) {
       const { path } = parse('read_file', input);
       const file = world.files.get(path);
-      if (!file) throw new ToolError(`No file "${path.slice(0, 80)}"`);
+      if (!file) throw new ToolError('No such file');
       return scalar(
         file.content,
         createLabel({
@@ -121,7 +124,7 @@ export function createFakeTools(world) {
 
     delete_file(input) {
       const { path } = parse('delete_file', input);
-      if (!world.files.delete(path)) throw new ToolError(`No file "${path.slice(0, 80)}"`);
+      if (!world.files.delete(path)) throw new ToolError('No such file');
       world.egress.push({ kind: 'delete', target: path });
       return scalar(
         'deleted',
@@ -134,7 +137,7 @@ export function createFakeTools(world) {
       // The request itself leaves the machine, whether or not the page exists.
       world.egress.push({ kind: 'fetch', target: url });
       const page = world.pages.get(url);
-      if (!page) throw new ToolError(`Could not fetch ${url.slice(0, 120)} (404)`);
+      if (!page) throw new ToolError('The page could not be fetched (404)');
       return scalar(page.content, createLabel({ integrity: 'untrusted', sources: [`web:${url}`] }));
     },
   };

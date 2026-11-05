@@ -211,6 +211,23 @@ test('a tool failure stops the run with a short, safe message', async () => {
   assert.ok(types(h.events).includes('step_failed:s2'));
   assert.ok(types(h.events).includes('step_skipped:s3'));
   assert.ok(types(h.events).includes('step_skipped:s4'));
+  // "Safe" means what it says: an unexpected exception's text (paths, internals,
+  // argument text) is replaced, not passed on to the user or the audit log.
+  assert.doesNotMatch(result.error.message, /ECONNRESET|\/Users\/me|stack/);
+  assert.match(result.error.message, /an unexpected error/);
+});
+
+test("a tool's own refusal message is passed on, but only for tool errors", async () => {
+  const refusal = Object.assign(new Error('No such file'), { name: 'ToolError' });
+  const h = makeHarness({
+    tools: {
+      read_email: () => {
+        throw refusal;
+      },
+    },
+  });
+  const result = await runPlan(scenarioAPlan(), h.ctx);
+  assert.match(result.error.message, /No such file/);
 });
 
 // ---- Validation happens inside runPlan ----------------------------------------
