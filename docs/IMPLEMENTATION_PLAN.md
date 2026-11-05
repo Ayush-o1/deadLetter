@@ -56,7 +56,7 @@ Exit: `npm test` and `npm run lint` pass; server starts; `/api/health` reports
 the database as connected; unknown route returns JSON 404; errors never leak
 stack traces.
 
-## Phase 2 — Labels and provenance ☐
+## Phase 2 — Labels and provenance ☑
 
 Parts (combined 2.1+2.2 because a value without provenance is meaningless):
 

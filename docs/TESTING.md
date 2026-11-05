@@ -28,12 +28,12 @@ test/
   helpers/       server starter, test database helpers
   unit/          pure functions: config, (later) labels, policy, plans
   integration/   HTTP + database
-  reference/     (phase 2) independent label checker
+  reference/     independent label checker (imports nothing from src/)
   security/      (later) regression tests for security behaviour
   e2e/           (later) full scenarios
 ```
 
-## Coverage so far (phase 1)
+## Coverage so far
 
 | Area                                                              | File                                     |
 | ----------------------------------------------------------------- | ---------------------------------------- |
@@ -42,6 +42,14 @@ test/
 | Health, 404, bad JSON, oversize body, security headers            | `test/integration/http.test.js`          |
 | Error handler hides internals, `AppError`, health when DB is down | `test/integration/errorHandling.test.js` |
 | Database round trip, reset helper, enum rejection                 | `test/integration/database.test.js`      |
+
+| Label lattice: join laws, integrity, readers, sources, freezing, validation | `test/unit/label.test.js` |
+| Provenance: literals, tool results, records/lists, control deps, forgery and immutability | `test/unit/provenance.test.js` |
+| Production labels vs independent reference on 1000 random graphs; invariants; checker tamper detection | `test/unit/labelConsistency.test.js` |
+| Structural guards: only `provenance.js` mints values; no `eval`/`child_process` in `src`; `core/` has no I/O imports | `test/security/architecture.test.js` |
+
+Random tests use a seeded generator (`test/helpers/prng.js`); a failure message
+includes the seed so the exact graph can be replayed.
 
 This file grows each phase; later sections will list the security regression
 suite and the metamorphic tests.
