@@ -1,0 +1,38 @@
+{
+  "name": "deadletter",
+  "version": "0.1.0",
+  "description": "An action firewall for AI agents: untrusted text cannot choose which tool runs or where private data goes.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": "^22.18.0 || ^24.11.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "postinstall": "prisma generate",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "pretest": "node scripts/prepare-test-db.js",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "express": "5.3.0",
+    "pg": "8.23.1",
+    "prisma": "7.10.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "eslint": "9.39.5",
+    "globals": "17.14.0",
+    "prettier": "3.9.10"
+  }
+}

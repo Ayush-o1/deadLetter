@@ -3,10 +3,10 @@
 deadLetter is an action firewall for AI agents. An agent may read untrusted
 text, but that text must not decide which tool runs or where private data goes.
 
-The design follows CaMeL (Debenedetti et al., *Defeating Prompt Injections by
-Design*, arXiv:2503.18813) and the plan-then-execute / dual-LLM patterns in
-Beurer-Kellner et al., *Design Patterns for Securing LLM Agents against Prompt
-Injections* (arXiv:2506.08837). What is established research and what is a
+The design follows CaMeL (Debenedetti et al., _Defeating Prompt Injections by
+Design_, arXiv:2503.18813) and the plan-then-execute / dual-LLM patterns in
+Beurer-Kellner et al., _Design Patterns for Securing LLM Agents against Prompt
+Injections_ (arXiv:2506.08837). What is established research and what is a
 choice made in this repository is spelled out in [DECISIONS.md](DECISIONS.md).
 
 > Status: this document describes the **target** architecture. The
@@ -35,26 +35,26 @@ flowchart LR
 
 Two lanes meet in one place, the interpreter:
 
-* **Decision lane.** User request → planner → plan. Nothing from the outside
+- **Decision lane.** User request → planner → plan. Nothing from the outside
   world enters this lane.
-* **Data lane.** Untrusted text → quarantined model → labelled values. It has no
+- **Data lane.** Untrusted text → quarantined model → labelled values. It has no
   way to reach a tool.
 
 ## 2. Components
 
-| # | Component | Reads the request | Reads untrusted text | Can call tools |
-|---|-----------|:-:|:-:|:-:|
-| 1 | Planner | yes | **never** | no, it only writes a plan |
-| 2 | Quarantined model | no | only its narrow task | **never** |
-| 3 | Interpreter | through the plan | only as labelled data | only after the policy engine allows |
-| 4 | Labels | - | - | - |
-| 5 | Policy engine | no | no, it reads labels, not text | no, it only decides |
+| #   | Component         | Reads the request |     Reads untrusted text      |           Can call tools            |
+| --- | ----------------- | :---------------: | :---------------------------: | :---------------------------------: |
+| 1   | Planner           |        yes        |           **never**           |      no, it only writes a plan      |
+| 2   | Quarantined model |        no         |     only its narrow task      |              **never**              |
+| 3   | Interpreter       | through the plan  |     only as labelled data     | only after the policy engine allows |
+| 4   | Labels            |         -         |               -               |                  -                  |
+| 5   | Policy engine     |        no         | no, it reads labels, not text |         no, it only decides         |
 
 ### 2.1 Planner (`src/core/models/planner.js`)
 
 `plan({ request, toolCatalog }) → Plan`. Its input is a plain object with
 exactly those two fields. There is no parameter through which tool results could
-arrive. The output is untrusted *as a program*, so it is validated (section 4)
+arrive. The output is untrusted _as a program_, so it is validated (section 4)
 before anything runs. On failure the run stops with "no plan"; there is no
 fallback that shows the planner anything else.
 
@@ -83,12 +83,12 @@ the first step runs. For every tool call it:
 Every value carries four facts (details in `POLICY_AND_LABELS.md`, written in
 phase 2):
 
-| Fact | Meaning | Example |
-|------|---------|---------|
-| `sources` | where it came from | `email:msg-2`, `user_request`, `contacts` |
-| `parents` | which values it was derived from | summary ← email body |
-| `readers` | who may receive it (confidentiality) | `public`, or a finite set of principals |
-| `integrity` | `trusted` or `untrusted` | address typed by the user: trusted |
+| Fact        | Meaning                              | Example                                   |
+| ----------- | ------------------------------------ | ----------------------------------------- |
+| `sources`   | where it came from                   | `email:msg-2`, `user_request`, `contacts` |
+| `parents`   | which values it was derived from     | summary ← email body                      |
+| `readers`   | who may receive it (confidentiality) | `public`, or a finite set of principals   |
+| `integrity` | `trusted` or `untrusted`             | address typed by the user: trusted        |
 
 Propagation rule: **a derived value takes the most restrictive label of
 everything it was made from.** Integrity: untrusted if any parent is untrusted.
@@ -105,27 +105,27 @@ handler. Model output is never parsed for labels.
 I/O. Returns `allow | deny | ask` plus the rule that fired and the data for a
 plain-language explanation. Two layers:
 
-* **Floor (cannot be turned off):** unknown tool → ask; disabled tool → deny; an
+- **Floor (cannot be turned off):** unknown tool → ask; disabled tool → deny; an
   untrusted value in a destination or selector position → at least ask; a tool
   call inside an untrusted branch/loop → at least ask.
-* **Per-tool template (configurable):** `allow`, `ask`, `deny`,
+- **Per-tool template (configurable):** `allow`, `ask`, `deny`,
   `trusted_destination` (the matrix below).
 
-The final decision is the *stricter* of the two. A missing rule never allows.
+The final decision is the _stricter_ of the two. A missing rule never allows.
 
 ## 3. The policy matrix for outbound tools
 
 Template `trusted_destination` (default for `send_email`, `fetch_url`):
 
-| Destination | Data | Decision |
-|-------------|------|----------|
+| Destination                                              | Data                                              | Decision  |
+| -------------------------------------------------------- | ------------------------------------------------- | --------- |
 | trusted (typed by the user, or a contact the user named) | public, or private but destination may receive it | **allow** |
-| trusted | private, destination not allowed to receive it | **ask** |
-| untrusted (derived from outside text) | not private | **ask** |
-| untrusted | private | **deny** |
+| trusted                                                  | private, destination not allowed to receive it    | **ask**   |
+| untrusted (derived from outside text)                    | not private                                       | **ask**   |
+| untrusted                                                | private                                           | **deny**  |
 
 "May receive it" means the destination is in the data's `readers`, or the user
-named that recipient in this request. A value is *private* if its readers are
+named that recipient in this request. A value is _private_ if its readers are
 not `public`. Control-flow and unknown-tool rules from the floor are applied on
 top.
 
@@ -137,32 +137,59 @@ A plan is JSON validated by a strict schema. It is not code.
 {
   "version": 1,
   "steps": [
-    {"id": "s1", "op": "call", "tool": "lookup_contact", "args": {"name": {"lit": "Alice"}}, "as": "alice"},
-    {"id": "s2", "op": "call", "tool": "read_email", "args": {"from": {"lit": "Bob"}, "which": {"lit": "latest"}}, "as": "mail"},
-    {"id": "s3", "op": "quarantine", "task": "summarize", "input": {"ref": "mail", "path": ["body"]}, "output": "text", "as": "summary"},
-    {"id": "s4", "op": "call", "tool": "send_email",
-     "args": {"to": {"ref": "alice", "path": ["email"]}, "subject": {"lit": "Summary"}, "body": {"ref": "summary"}}}
+    {
+      "id": "s1",
+      "op": "call",
+      "tool": "lookup_contact",
+      "args": { "name": { "lit": "Alice" } },
+      "as": "alice"
+    },
+    {
+      "id": "s2",
+      "op": "call",
+      "tool": "read_email",
+      "args": { "from": { "lit": "Bob" }, "which": { "lit": "latest" } },
+      "as": "mail"
+    },
+    {
+      "id": "s3",
+      "op": "quarantine",
+      "task": "summarize",
+      "input": { "ref": "mail", "path": ["body"] },
+      "output": "text",
+      "as": "summary"
+    },
+    {
+      "id": "s4",
+      "op": "call",
+      "tool": "send_email",
+      "args": {
+        "to": { "ref": "alice", "path": ["email"] },
+        "subject": { "lit": "Summary" },
+        "body": { "ref": "summary" }
+      }
+    }
   ]
 }
 ```
 
-* Ops: `call`, `quarantine`, `if`, `for_each`, `show`.
-* Expressions: `lit`, `ref` (variable + optional field path), `concat`.
-* Tool names, operation names and variable names are **static strings in the
+- Ops: `call`, `quarantine`, `if`, `for_each`, `show`.
+- Expressions: `lit`, `ref` (variable + optional field path), `concat`.
+- Tool names, operation names and variable names are **static strings in the
   plan**. No expression can produce one, so untrusted data cannot choose a tool.
-* Literals that name a destination or selector (an address, URL, path) must
+- Literals that name a destination or selector (an address, URL, path) must
   appear verbatim in the user's request ("grounding"). A planner that invents an
   address fails validation.
-* Hard limits: step count, loop iterations, nesting depth, string size.
+- Hard limits: step count, loop iterations, nesting depth, string size.
 
 ## 5. Control-flow protection
 
-The interpreter keeps a *control label* (a program-counter label from the
+The interpreter keeps a _control label_ (a program-counter label from the
 information-flow literature). Entering an `if` or `for_each` whose condition or
 list is untrusted pushes that label. While it is non-trivial:
 
-* any tool call is raised to at least **ask** (the floor), and
-* any value created inside the block is marked untrusted with the condition as a
+- any tool call is raised to at least **ask** (the floor), and
+- any value created inside the block is marked untrusted with the condition as a
   parent, so a later `send` cannot launder the dependency.
 
 This closes the direct case in the spec: "if the email says urgent, send to
@@ -174,12 +201,12 @@ Alice, otherwise Bob" would let the email pick the recipient.
 data preview, the provenance of each argument, the rule that fired and a warning
 when untrusted text influenced a value. Choices:
 
-| Choice | Effect |
-|--------|--------|
-| Send once | execute this call only |
-| Send and trust | execute and add the destination to trusted recipients |
+| Choice           | Effect                                                               |
+| ---------------- | -------------------------------------------------------------------- |
+| Send once        | execute this call only                                               |
+| Send and trust   | execute and add the destination to trusted recipients                |
 | Edit destination | the new, user-typed destination is re-evaluated by the policy engine |
-| Reject | the call never reaches the tool; the run records the rejection |
+| Reject           | the call never reaches the tool; the run records the rejection       |
 
 A human can resolve **ask**. A human cannot override **deny**.
 
@@ -191,14 +218,14 @@ are marked `interrupted` (see DECISIONS.md, D10).
 Fake, deterministic and local. Each tool adapter is trusted code that assigns the
 labels of what it returns. Anything a tool cannot vouch for is untrusted.
 
-| Tool | Kind | Notes |
-|------|------|-------|
-| `lookup_contact` | read | result trusted (the user's own contacts) |
-| `read_email` | read | body and sender untrusted; mailbox content is private (`readers`: user only) |
-| `send_email` | send | destination argument; recorded in an in-memory "outbox" that tests inspect |
-| `read_file` | read | per-file fixture: private or public, trusted or untrusted |
-| `delete_file` | destructive | default template: `ask` |
-| `fetch_url` | read, and a data exit via the URL | URL is a destination; fixtures return web pages (untrusted) |
+| Tool             | Kind                              | Notes                                                                        |
+| ---------------- | --------------------------------- | ---------------------------------------------------------------------------- |
+| `lookup_contact` | read                              | result trusted (the user's own contacts)                                     |
+| `read_email`     | read                              | body and sender untrusted; mailbox content is private (`readers`: user only) |
+| `send_email`     | send                              | destination argument; recorded in an in-memory "outbox" that tests inspect   |
+| `read_file`      | read                              | per-file fixture: private or public, trusted or untrusted                    |
+| `delete_file`    | destructive                       | default template: `ask`                                                      |
+| `fetch_url`      | read, and a data exit via the URL | URL is a destination; fixtures return web pages (untrusted)                  |
 
 Every tool invocation goes through one function, `invokeTool(call, decision)`.
 It refuses to run unless `decision` was minted by the policy engine for exactly
@@ -226,15 +253,15 @@ the evaluation reproducible.
 
 ## 9. Persistence (Prisma + PostgreSQL)
 
-| Table | Holds |
-|-------|-------|
-| `Run` | request, plan JSON, status, timestamps, bounded result preview |
-| `Step` | per-step audit record: tool, argument labels and previews, rule, decision, decided by (engine / user), result or error |
-| `Approval` | pending / resolved approval requests |
-| `ToolSetting` | per-tool enabled flag and policy template |
-| `TrustedRecipient` | addresses trusted through "send and trust" |
-| `ProvenanceNode` | compact label graph for the information-flow explorer |
-| `EvalReport` | stored evaluation reports |
+| Table              | Holds                                                                                                                  |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `Run`              | request, plan JSON, status, timestamps, bounded result preview                                                         |
+| `Step`             | per-step audit record: tool, argument labels and previews, rule, decision, decided by (engine / user), result or error |
+| `Approval`         | pending / resolved approval requests                                                                                   |
+| `ToolSetting`      | per-tool enabled flag and policy template                                                                              |
+| `TrustedRecipient` | addresses trusted through "send and trust"                                                                             |
+| `ProvenanceNode`   | compact label graph for the information-flow explorer                                                                  |
+| `EvalReport`       | stored evaluation reports                                                                                              |
 
 The audit log stores labels, sources and short redacted previews, never
 complete private content (ADR D14).
@@ -243,11 +270,11 @@ complete private content (ADR D14).
 
 Three defences share one agent harness so that comparisons are fair:
 
-| Defence | What guards tool calls |
-|---------|------------------------|
-| `none` | nothing |
+| Defence         | What guards tool calls                                           |
+| --------------- | ---------------------------------------------------------------- |
+| `none`          | nothing                                                          |
 | `session_taint` | blocks every outbound tool once anything untrusted has been read |
-| `deadletter` | planner + quarantined model + interpreter + policy engine |
+| `deadletter`    | planner + quarantined model + interpreter + policy engine        |
 
 Scenarios are data files (request, fixtures, attacker goal, success predicate).
 Metrics are computed from recorded executions: attack success rate, benign

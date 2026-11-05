@@ -1,0 +1,31 @@
+// deadLetter data model. See docs/ARCHITECTURE.md section 9 for the full plan;
+// tables are added in the phase that first needs them.
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RunStatus {
+  planning
+  running
+  awaiting_approval
+  completed
+  failed
+  cancelled
+  interrupted
+}
+
+model Run {
+  id        String    @id @default(uuid())
+  request   String
+  status    RunStatus @default(planning)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
