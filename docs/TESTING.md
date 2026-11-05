@@ -74,6 +74,8 @@ includes the seed so the exact graph can be replayed.
 | Repositories: **one contract run against the in-memory and the Prisma implementation** (round trip, upsert, filters, pagination, status lookup, cascade); stored rules incl. fail-closed on a missing row and on corrupted rows; stored reports | `test/integration/repositories.test.js`, `policyRepository.test.js`, `database.test.js` |
 | The whole application over HTTP on PostgreSQL: validation, scenarios A and D with approve/reject/edit/trust/cancel, rules taking effect, History search, restart recovery, flow graph, Lab, and a **database-wide scan for private content** | `test/e2e/api.test.js` (uses `test/helpers/app.js`) |
 
+| The real UI in the installed Chrome (puppeteer-core): scenarios A and D through the screens, approve / reject / edit, Why? and the flow explorer, Rules and History, **XSS inertness** (markup in an email shows as text and never runs; the element builder refuses `style`, string handlers and external links), CSP violations, phone layout without sideways scroll, accessibility basics | `test/ui/ui.test.js` (skipped with a message if no Chrome is found; set `CHROME_PATH` to point at one) |
+
 The end-to-end scenarios requested in the project brief map to tests as follows:
 
 | Scenario                   | Test                                                                                  |

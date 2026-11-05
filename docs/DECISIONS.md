@@ -211,6 +211,28 @@ are real columns. That keeps the schema small while making "show me every deny"
 a plain indexed query. PostgreSQL `jsonb` does not preserve key order, so tests
 compare stored JSON structurally, not as text.
 
+## D27. The frontend builds DOM only through `h()`, which refuses unknown attributes
+
+Choice. The UI shows text written by outsiders, so a rendering slip would be a
+security bug. `public/js/dom.js` creates elements with text nodes only (no
+`innerHTML`), accepts attributes from a short allow-list, and rejects links that
+are not in-app or `/api/`. An unrecognised attribute throws, which is how the
+strict CSP (`script-src 'self'; style-src 'self'; img-src 'self'`, no inline
+anything) stays achievable: there is nowhere for an inline style or handler to
+come from. Cost: a little more code than template strings.
+
+## D28. `puppeteer-core` as a dev dependency, driving the installed Chrome
+
+Choice. UI behaviour, layout and the XSS claim can only be checked in a real
+browser. `puppeteer-core` downloads no browser; it drives the Chrome already on the
+machine (CI runners ship one). It is a dev dependency used by the UI tests and the
+screenshot script only. UI tests skip with a clear message if no Chrome is found.
+
+## D29. The flow explorer ships with the Run screen
+
+Choice. The plan put the explorer in phase 10, but the Run screen's "Why? / Trace"
+needs it, so the component is delivered with phase 9; phase 10 adds the Lab.
+
 ## Open questions (decide at the phase named)
 
 - Phase 5: which live provider to document first. Needs an API key from the user.

@@ -20,6 +20,11 @@ export default [
     },
   },
   {
+    // Functions passed to page.evaluate() run inside the browser.
+    files: ['test/ui/**/*.js', 'scripts/screenshots.js'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
     // Browser code (added in phase 9) runs in a different environment.
     files: ['public/**/*.js'],
     languageOptions: { globals: { ...globals.browser } },

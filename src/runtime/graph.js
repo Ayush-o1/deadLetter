@@ -33,12 +33,16 @@ export function usedBy(steps) {
   return uses;
 }
 
-/** The values that matter for one step: its arguments, result, input and conditions. */
+/**
+ * The values that matter for one step: its arguments, input and conditions, and its
+ * result for steps that produce a value of their own. A tool call's own result (for
+ * example "sent") is left out: what matters about a call is what went into it.
+ */
 export function stepRoots(step) {
   return [
     ...(step.args ?? []).map((a) => a.valueId),
     ...(step.control ?? []).map((c) => c.valueId),
-    ...(step.result ? [step.result.valueId] : []),
+    ...(step.result && step.op !== 'call' ? [step.result.valueId] : []),
     ...(step.input ? [step.input.valueId] : []),
   ];
 }

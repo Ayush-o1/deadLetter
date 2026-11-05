@@ -1,0 +1,53 @@
+/* Design tokens. Light theme only. Colour carries meaning here, so each semantic
+   colour has one job and is never reused for decoration:
+     trusted / untrusted / private   labels on values
+     allow / ask / deny              policy decisions
+     brand                           navigation and primary actions            */
+:root {
+  color-scheme: light;
+
+  --bg: #f5f4ef;
+  --surface: #ffffff;
+  --surface-2: #faf9f6;
+  --surface-3: #f0eee7;
+  --ink: #16181d;
+  --ink-2: #454b56;
+  --muted: #666d79;
+  --line: #e3e0d7;
+  --line-strong: #cbc6b9;
+
+  --brand: #1d3557;
+  --brand-hover: #162a45;
+  --brand-soft: #e7ecf4;
+  --focus: #2a78d6;
+
+  --trusted: #14684d;
+  --trusted-bg: #e2f2ea;
+  --untrusted: #9c4309;
+  --untrusted-bg: #fcebd9;
+  --private: #3a4559;
+  --private-bg: #e7eaf0;
+
+  --allow: #14684d;
+  --allow-bg: #e2f2ea;
+  --ask: #805300;
+  --ask-bg: #faefcb;
+  --deny: #a1241a;
+  --deny-bg: #fbe4e1;
+  --neutral-bg: #eeece5;
+
+  /* Chart series (validated for colour-blind separation) */
+  --series-none: #eb6834;
+  --series-taint: #2a78d6;
+  --series-dl: #1baf7a;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 0 rgba(22, 24, 29, 0.04), 0 1px 3px rgba(22, 24, 29, 0.05);
+  --shadow-pop: 0 12px 40px rgba(22, 24, 29, 0.16);
+
+  --font:
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+}

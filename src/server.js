@@ -1,4 +1,5 @@
 // Process entrypoint: load config, connect, listen, and shut down cleanly.
+import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
 import { createServices } from './composition.js';
 import { loadConfig, loadDotEnv } from './config.js';
@@ -10,7 +11,11 @@ const db = createDb(config.databaseUrl);
 const services = createServices({ db, config });
 const interrupted = await services.start();
 if (interrupted > 0) console.log(`Marked ${interrupted} run(s) interrupted by the last shutdown`);
-const app = createApp({ db, services });
+const app = createApp({
+  db,
+  services,
+  publicDir: fileURLToPath(new URL('../public', import.meta.url)),
+});
 
 // Bind to the loopback interface only: there are no accounts, so the server must
 // not be reachable from the network unless HOST says so.

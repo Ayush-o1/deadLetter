@@ -384,19 +384,30 @@ export function createRunService({
   async function requestApproval(rt, info) {
     const { record } = rt;
     const step = rt.steps.findLast((s) => s.stepId === info.stepId && s.state === 'running');
-    if (step) step.state = 'needs_approval';
-    record.status = 'awaiting_approval';
-    addEvent(rt, 'approval_requested', { stepId: info.stepId, tool: info.tool });
-    if (step) await saveStep(rt, step);
-    await saveRun(rt);
 
-    // The interpreter is suspended on this await until someone answers.
-    const answer = await approvals.request({
+    // Register the approval FIRST. The status below says "awaiting_approval", and
+    // anyone who sees that must find something to answer. (Registering is
+    // synchronous; the interpreter stays suspended on `pending` until answered.)
+    const pending = approvals.request({
       runId: record.id,
       stepId: info.stepId,
       tool: info.tool,
       card: info.card,
     });
+
+    let answer;
+    try {
+      if (step) step.state = 'needs_approval';
+      record.status = 'awaiting_approval';
+      addEvent(rt, 'approval_requested', { stepId: info.stepId, tool: info.tool });
+      if (step) await saveStep(rt, step);
+      await saveRun(rt);
+      answer = await pending;
+    } catch (err) {
+      // Could not record the pause: do not leave an unanswerable approval behind.
+      approvals.cancelRun(record.id);
+      throw err;
+    }
 
     if (record.status === 'awaiting_approval') record.status = 'running';
     addEvent(rt, 'approval_resolved', { stepId: info.stepId, action: answer.action });

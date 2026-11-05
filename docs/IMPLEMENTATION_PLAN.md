@@ -145,7 +145,7 @@ isolate Prisma from the rest.
 Exit: integration tests against `deadletter_test`; every security rule is
 enforced in the backend, not the UI.
 
-## Phase 9 — Main frontend ☐
+## Phase 9 — Main frontend ☑
 
 Vanilla HTML/CSS/JS: navigation, Run (task, plan preview, step progress,
 approval cards, warnings, explanations, results), Rules, History. Light theme.

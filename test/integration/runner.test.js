@@ -509,3 +509,24 @@ test('list() returns runs newest first', async () => {
     [b.id, a.id],
   );
 });
+
+test('whenever a run says "awaiting_approval", the approval already exists (no empty window)', async () => {
+  const { service } = makeService();
+  const { id } = await service.create(REQUEST_D);
+  await service.execute(id);
+  let sawAwaiting = 0;
+  for (let i = 0; i < 400; i++) {
+    const snap = await service.get(id);
+    if (snap.status === 'awaiting_approval') {
+      sawAwaiting += 1;
+      assert.ok(
+        snap.pendingApprovals.length > 0,
+        'status said awaiting_approval with nothing to answer',
+      );
+      if (sawAwaiting > 3) break;
+    }
+    await new Promise((r) => setImmediate(r));
+  }
+  assert.ok(sawAwaiting > 0, 'the run did pause');
+  await service.cancel(id);
+});

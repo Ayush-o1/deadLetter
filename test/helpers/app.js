@@ -1,5 +1,6 @@
 // A complete application on the test database: real Prisma repositories, mock
 // models, real HTTP server. Used by the API tests.
+import { fileURLToPath } from 'node:url';
 import { createApp } from '../../src/app.js';
 import { createServices } from '../../src/composition.js';
 import { createTestDb, resetDb } from './testDb.js';
@@ -15,7 +16,14 @@ export async function makeApp({ overrides = {}, reset = true, db: existingDb } =
     overrides,
   });
   await services.start();
-  const server = await startServer(createApp({ db, services, logger: { error() {} } }));
+  const server = await startServer(
+    createApp({
+      db,
+      services,
+      publicDir: fileURLToPath(new URL('../../public', import.meta.url)),
+      logger: { error() {} },
+    }),
+  );
 
   const call = async (method, path, body) => {
     const res = await fetch(`${server.baseUrl}${path}`, {

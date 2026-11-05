@@ -14,6 +14,8 @@ and does not claim.
 > in place. The security engine, UI and evaluation are built phase by phase; see
 > [docs/IMPLEMENTATION_PLAN.md](docs/IMPLEMENTATION_PLAN.md) for what exists today.
 
+![The Run screen with an approval waiting](docs/screenshots/run-approval.png)
+
 ## How it works, briefly
 
 1. A **planner** sees only your request and writes a short, validated plan.
@@ -54,6 +56,7 @@ Check it works: `curl localhost:3000/api/health` should print
 | `npm run dev`          | run the server and restart on file changes                    |
 | `npm test`             | create/migrate the `deadletter_test` database, then run tests |
 | `npm run eval`         | run all scenarios against all defences, write `reports/`      |
+| `npm run screenshots`  | regenerate the images in `docs/screenshots/` (needs Chrome)   |
 | `npm run lint`         | ESLint                                                        |
 | `npm run format:check` | Prettier check (`npm run format` to fix)                      |
 | `npm run db:migrate`   | create a new migration during development                     |

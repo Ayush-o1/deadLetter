@@ -300,6 +300,26 @@ stateDiagram-v2
   short previews, never full text. Whole result text exists only in memory while
   the run is live.
 
+## 8b. The browser app (`public/`)
+
+Plain HTML, CSS and ES modules; no build step and no framework. `index.html` loads
+`js/main.js`, a hash router (`#/run`, `#/rules`, `#/history`) over three views.
+
+```
+public/js/
+  dom.js          the only way DOM is created (text nodes; allow-listed attributes)
+  api.js          the only place that talks to the server
+  format.js       wording for statuses, decisions and labels
+  components/     chips, plan preview, trace, approval card, flow explorer
+  views/          run, rules, history
+```
+
+Design rules: everything shown comes from the API; no security decision is made in
+the browser; text from outside is only ever a text node; the page makes no external
+requests and loads no images, which the CSP enforces. The Run view polls
+`GET /api/runs/:id` while a run is active and rebuilds the approval card only when
+the set of pending approvals changes, so text you are typing is never lost.
+
 ## 9. Persistence (Prisma + PostgreSQL)
 
 | Table                | Holds                                                                                                                                                           |

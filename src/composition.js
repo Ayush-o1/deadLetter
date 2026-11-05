@@ -20,7 +20,7 @@ import { createRunService } from './runtime/runner.js';
 
 /**
  * @param {{ db: object, config: { model: object }, logger?: object, overrides?: object }} deps
- *   overrides: replace any repository or provider (used by tests)
+ *   overrides: replace any repository, provider or the fake-world fixtures (used by tests)
  */
 export function createServices({ db, config, logger = console, overrides = {} }) {
   const policy = overrides.policy ?? createPrismaPolicyRepository(db, toolCatalog, logger);
@@ -46,7 +46,7 @@ export function createServices({ db, config, logger = console, overrides = {} })
     planner: createPlanner({ provider: plannerProvider, catalog: toolCatalog }),
     quarantine: createQuarantine({ provider: quarantineProvider }),
     catalog: toolCatalog,
-    createWorld: () => createWorld(seedFixtures),
+    createWorld: () => createWorld(overrides.fixtures ?? seedFixtures),
     createTools: (world) => createFakeTools(world),
     getPolicyConfig: () => policy.getConfig(),
     onTrustDestination: (destination) => policy.addTrusted(destination),
