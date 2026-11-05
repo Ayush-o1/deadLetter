@@ -23,7 +23,8 @@ import { evaluate } from './engine.js';
  * @param {() => Promise<object> | object} deps.getConfig   returns a parsed policy config
  * @param {(request: object) => Promise<{ action: string, destination?: string }>} deps.requestApproval
  * @param {(destination: string) => Promise<void> | void} [deps.onTrustDestination]
- * @param {(record: object) => void} [deps.onDecision]   one call per tool call, for the audit log
+ * @param {(record: object) => void | Promise<void>} [deps.onDecision]
+ *   one call per tool call, for the audit log; awaited before the call may run
  */
 export function createPolicyGate({
   catalog,
@@ -33,8 +34,10 @@ export function createPolicyGate({
   onTrustDestination = () => {},
   onDecision = () => {},
 }) {
-  const execute = (tool, args, decision, decidedBy, extra = {}) => {
-    onDecision({ tool, args, decision, decidedBy, outcome: 'executed', ...extra });
+  // The decision is recorded (and AWAITED) before the token is minted: if the
+  // record cannot be written, the call never receives permission to run.
+  const execute = async (tool, args, decision, decidedBy, extra = {}) => {
+    await onDecision({ tool, args, decision, decidedBy, outcome: 'executed', ...extra });
     return {
       outcome: 'execute',
       args,
@@ -44,8 +47,8 @@ export function createPolicyGate({
     };
   };
 
-  const refuse = (tool, args, decision, decidedBy, reason, message, extra = {}) => {
-    onDecision({ tool, args, decision, decidedBy, outcome: 'blocked', reason, ...extra });
+  const refuse = async (tool, args, decision, decidedBy, reason, message, extra = {}) => {
+    await onDecision({ tool, args, decision, decidedBy, outcome: 'blocked', reason, ...extra });
     return { outcome: 'blocked', reason, message, decision, decidedBy };
   };
 

@@ -264,6 +264,42 @@ other layers: no Express, no database, no `fetch`, no clock except through
 injected parameters. That is what makes the security engine unit-testable and
 the evaluation reproducible.
 
+## 8a. Run lifecycle and audit (`src/runtime/`)
+
+```mermaid
+stateDiagram-v2
+    [*] --> planning: create(request)
+    planning --> planned: plan valid
+    planning --> failed: cannot plan / invalid plan
+    planned --> running: execute
+    planned --> cancelled: cancel
+    running --> awaiting_approval: policy says ask
+    awaiting_approval --> running: approve / edit / trust
+    awaiting_approval --> blocked: reject
+    running --> completed
+    running --> blocked: deny
+    running --> failed: tool / model error, limit
+    running --> cancelled: cancel
+    awaiting_approval --> cancelled: cancel
+    running --> interrupted: server restarted
+    awaiting_approval --> interrupted: server restarted
+```
+
+- `create` plans and previews. No world, value store or tool exists yet, so the
+  plan cannot depend on anything a tool returns.
+- `execute` creates the run's own fake world and value store, then runs the plan
+  in the background. `get` returns a snapshot with steps, pending approval cards
+  and results.
+- **Audit before action.** The interpreter awaits the "step started" record and
+  the gate awaits the policy-decision record before a tool may run. If storage
+  fails, the run stops and the action does not happen.
+- **What is saved** is plain JSON: per step, the tool, each argument's label,
+  origin and a short preview, the rule that fired, who decided (engine or user),
+  and the result label and preview. Preview length shrinks with sensitivity
+  (see `src/runtime/audit.js`). The provenance graph is saved with labels and
+  short previews, never full text. Whole result text exists only in memory while
+  the run is live.
+
 ## 9. Persistence (Prisma + PostgreSQL)
 
 | Table              | Holds                                                                                                                  |

@@ -85,19 +85,23 @@ export async function runPlan(planInput, ctx) {
   let currentStepId;
   let iteration = [];
 
-  const event = (type, step, extra = {}) =>
-    emit({
+  // Events are awaited. A caller that persists them (the audit log) therefore
+  // finishes writing a record BEFORE the interpreter goes on to the action it
+  // describes; if the write fails, the run stops and the action never happens.
+  const event = async (type, step, extra = {}) => {
+    await emit({
       type,
       step: { id: step.id, op: step.op, tool: step.tool },
       iteration: [...iteration],
       ...extra,
     });
+  };
 
-  const skip = (steps, reason) => {
+  const skip = async (steps, reason) => {
     for (const s of steps) {
       if (started.has(s.id) || skipped.has(s.id)) continue;
       skipped.add(s.id);
-      event('step_skipped', s, { reason });
+      await event('step_skipped', s, { reason });
     }
   };
 
@@ -110,7 +114,7 @@ export async function runPlan(planInput, ctx) {
     }
     currentStepId = step.id;
     started.add(step.id);
-    event('step_started', step, { control: [...control] });
+    await event('step_started', step, { control: [...control] });
     const rt = { store, scope, control };
 
     switch (step.op) {
@@ -157,7 +161,7 @@ export async function runPlan(planInput, ctx) {
     if (decision?.outcome !== 'execute') {
       const reason = decision?.reason ?? 'denied';
       const message = decision?.message ?? 'The action was not allowed';
-      event('step_blocked', step, { reason, message, decision });
+      await event('step_blocked', step, { reason, message, decision });
       throw new RunHalt(reason === 'cancelled' ? 'cancelled' : 'blocked', reason, message);
     }
 
@@ -188,7 +192,7 @@ export async function runPlan(planInput, ctx) {
       inputs: Object.values(finalArgs),
     });
     if (step.as) rt.scope.define(step.as, result);
-    event('step_finished', step, { result, args: finalArgs });
+    await event('step_finished', step, { result, args: finalArgs });
   }
 
   async function runQuarantine(step, rt) {
@@ -237,7 +241,7 @@ export async function runPlan(planInput, ctx) {
       });
     }
     rt.scope.define(step.as, result);
-    event('step_finished', step, { result });
+    await event('step_finished', step, { result });
   }
 
   async function runIf(step, rt) {
@@ -246,8 +250,8 @@ export async function runPlan(planInput, ctx) {
       throw fail('condition_not_boolean', 'An if condition must be true or false');
     const taken = cond.data ? step.then : (step.else ?? []);
     const notTaken = cond.data ? (step.else ?? []) : step.then;
-    event('step_finished', step, { result: cond, branch: cond.data ? 'then' : 'else' });
-    skip(flatten(notTaken), 'branch_not_taken');
+    await event('step_finished', step, { result: cond, branch: cond.data ? 'then' : 'else' });
+    await skip(flatten(notTaken), 'branch_not_taken');
     // From here on, everything created or called is "under" this condition.
     await runBlock(taken, new Scope(rt.scope), [...rt.control, cond]);
   }
@@ -266,7 +270,7 @@ export async function runPlan(planInput, ctx) {
         `The list has ${items.length} items; the limit is ${limits.maxLoopIterations}`,
       );
     }
-    event('step_finished', step, { result: list, iterations: items.length });
+    await event('step_finished', step, { result: list, iterations: items.length });
     // How many times the body runs is decided by the list, so the list is a control dependency.
     const control = [...rt.control, list];
     for (let i = 0; i < items.length; i++) {
@@ -302,9 +306,9 @@ export async function runPlan(planInput, ctx) {
     iteration = [];
     // Remaining steps never ran. Record that rather than leaving them in limbo.
     try {
-      skip(flatten(plan.steps), BLOCK_REASON[halt.status]);
+      await skip(flatten(plan.steps), BLOCK_REASON[halt.status]);
       if (step && halt.status === 'failed') {
-        event('step_failed', step, { error: { code: halt.code, message: halt.message } });
+        await event('step_failed', step, { error: { code: halt.code, message: halt.message } });
       }
     } catch {
       // The event sink itself failed; the run has already stopped, nothing more to protect.

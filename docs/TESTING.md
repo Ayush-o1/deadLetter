@@ -64,13 +64,27 @@ includes the seed so the exact graph can be replayed.
 | Live provider (stubbed fetch): request shapes, no tools offered to the quarantined model, delimiter escaping, error paths never leak the key | `test/unit/liveProvider.test.js` |
 | Scenarios A, B, C, D, E and control flow through the real fake tools, checking what actually left the machine | `test/integration/fakeToolsPipeline.test.js` |
 
+| Run service: planning without a world, request-only planner, execute/pause/approve/reject/cancel, failures, restart recovery, concurrency | `test/integration/runner.test.js` (uses `test/helpers/service.js`) |
+| Audit: **audit-before-action** (storage failure at "step started" and at the decision record), **privacy** (canary and full-text scan of every record ever saved), bounded previews, provenance graph has no full text | `test/integration/runner.test.js` |
+
+The end-to-end scenarios requested in the project brief map to tests as follows:
+
+| Scenario                   | Test                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| normal email summarisation | `fakeToolsPipeline`: "E: a normal email..."; `runner`: "scenario A"                   |
+| malicious email            | `fakeToolsPipeline`: "A: a malicious email..."                                        |
+| malicious webpage          | `fakeToolsPipeline`: "B: a malicious web page..."                                     |
+| private file leakage       | `fakeToolsPipeline`: "C: ..." (two tests); `runner`: "an attack run"                  |
+| approval-required task     | `fakeToolsPipeline` and `runner`: "scenario D" (approve, trust, edit, reject, cancel) |
+| normal benign task         | `runner`: "scenario A", "list() ..."                                                  |
+
 The security-critical tests were checked by deliberately breaking the code and
 confirming they fail: a join that forgets untrusted inputs, a fail-open gate, a
 control stack that omits the condition, a file that imports the value minting
 function, an engine that stops denying private data to untrusted destinations,
 one that stops asking for untrusted selectors or missing rules, a gate that
 approves unrecognised answers, replayable tokens, and tokens that accept swapped
-arguments. A planner that is handed extra data and a model module that imports the fake world were also caught. Each made at least one test fail.
+arguments. A planner that is handed extra data, a model module that imports the fake world, a gate that stopped awaiting its decision record, and an interpreter that stopped awaiting the "step started" record were also caught (the last two only after the tests were made specific enough to notice). Each made at least one test fail.
 
 This file grows each phase; later sections will list the security regression
 suite and the metamorphic tests.

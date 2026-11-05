@@ -110,7 +110,7 @@ without a token fails.
 Exit: tests prove the planner function never receives tool results (spy);
 malformed model output and provider failures fail closed; no network in tests.
 
-## Phase 6 — Orchestration and audit ☐
+## Phase 6 — Orchestration and audit ☑
 
 | Part                      | Tasks                                                              | Files                      |
 | ------------------------- | ------------------------------------------------------------------ | -------------------------- |

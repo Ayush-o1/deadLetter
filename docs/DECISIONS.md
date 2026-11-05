@@ -167,6 +167,22 @@ through the policy engine" from a convention into something a test can attack
 Only `policy/gate.js` may mint and only `tools/invoke.js` may consume; a test
 checks the imports.
 
+## D21. Audit before action
+
+Choice. The interpreter awaits each event and the policy gate awaits each
+decision record before minting a token. An audit write that fails therefore
+stops the run before the action. Cost: a storage outage halts runs. That is the
+intended direction of failure for a security tool: an unrecorded action is worse
+than a stopped one. Tests inject storage failures at the "step started" write and
+at the decision write and confirm nothing is sent.
+
+## D22. Results are bounded in storage, whole in memory
+
+Choice. A user needs to read their whole summary while the run is live, but the
+log must not become a copy of private documents. Whole result text is held in
+memory only for the live run (the last 100 runs); storage keeps a preview of at
+most 300 characters (120 if private) and says it was truncated.
+
 ## Open questions (decide at the phase named)
 
 - Phase 5: which live provider to document first. Needs an API key from the user.

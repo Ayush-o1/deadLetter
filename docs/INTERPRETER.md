@@ -160,8 +160,9 @@ its label. The dependency is carried by the control stack on calls instead.
 `step_started`, `step_finished`, `step_blocked`, `step_failed`, `step_skipped`,
 each with the step id, operation, tool and loop `iteration` indices. Steps that
 never ran (after a block, failure or cancel, or in the branch not taken) are
-reported as `step_skipped` with a reason. If the event sink throws, the run
-stops: an action should not happen unrecorded.
+reported as `step_skipped` with a reason. Events are **awaited**: the sink finishes writing a record before the interpreter
+goes on to the action it describes. If the sink throws, the run stops, so an
+action cannot happen unrecorded.
 
 ### How a run ends
 
