@@ -19,7 +19,8 @@
     "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "eval": "node scripts/eval.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "7.10.1",

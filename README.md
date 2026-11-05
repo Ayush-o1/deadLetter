@@ -53,6 +53,7 @@ Check it works: `curl localhost:3000/api/health` should print
 | `npm start`            | run the server                                                |
 | `npm run dev`          | run the server and restart on file changes                    |
 | `npm test`             | create/migrate the `deadletter_test` database, then run tests |
+| `npm run eval`         | run all scenarios against all defences, write `reports/`      |
 | `npm run lint`         | ESLint                                                        |
 | `npm run format:check` | Prettier check (`npm run format` to fix)                      |
 | `npm run db:migrate`   | create a new migration during development                     |

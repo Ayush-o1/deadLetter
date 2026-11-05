@@ -183,6 +183,19 @@ log must not become a copy of private documents. Whole result text is held in
 memory only for the live run (the last 100 runs); storage keeps a preview of at
 most 300 characters (120 if private) and says it was truncated.
 
+## D23. Evaluation asserts exact results in the test suite
+
+Choice. `test/eval/evaluation.test.js` names which attacks succeed against which
+defence. A change that alters any result fails the suite, so it cannot happen
+unnoticed or be left undocumented. The cost is that legitimate engine changes
+must update both the test and `docs/EVALUATION.md`, which is the point.
+
+## D24. The evaluation includes cases deadLetter loses
+
+Choice. A misleading summary to an allowed recipient, an attacker address a user
+could approve, and a request that cannot be planned in advance are in the set on
+purpose. A set containing only wins would show nothing.
+
 ## Open questions (decide at the phase named)
 
 - Phase 5: which live provider to document first. Needs an API key from the user.

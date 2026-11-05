@@ -57,6 +57,86 @@ const PATTERNS = [
     },
   },
   {
+    // "Read Bob's latest email, summarise it, and send the summary to the address it mentions."
+    name: 'read_summarise_send_to_mentioned',
+    re: new RegExp(
+      String.raw`^read\s+(?<from>${NAME})(?:'s|’s)?\s+(?:latest\s+)?e-?mail,?\s+summari[sz]e\s+it,?\s+(?:and\s+)?send\s+(?:the\s+summary|it)\s+to\s+the\s+address\s+it\s+mentions\.?$`,
+      'i',
+    ),
+    build: ({ from }) => [
+      call('read', 'read_email', { from: lit(from) }, 'mail'),
+      {
+        id: 'who',
+        op: 'quarantine',
+        task: 'extract',
+        instruction: 'the email address mentioned in the message',
+        input: { ref: 'mail', path: ['body'] },
+        output: 'email',
+        as: 'target',
+      },
+      {
+        id: 'sum',
+        op: 'quarantine',
+        task: 'summarize',
+        input: { ref: 'mail', path: ['body'] },
+        output: 'text',
+        as: 'summary',
+      },
+      call('send', 'send_email', {
+        to: { ref: 'target' },
+        subject: lit('Summary'),
+        body: { ref: 'summary' },
+      }),
+    ],
+  },
+  {
+    // "Read Bob's latest email and send the file it names to Alice."
+    name: 'send_named_file',
+    re: new RegExp(
+      String.raw`^read\s+(?<from>${NAME})(?:'s|’s)?\s+(?:latest\s+)?e-?mail\s+and\s+send\s+the\s+file\s+it\s+names\s+to\s+(?<to>${NAME})\.?$`,
+      'i',
+    ),
+    build: ({ from, to }) => {
+      const steps = [];
+      const dest = recipient(steps, to, 'dest');
+      steps.push(
+        call('read', 'read_email', { from: lit(from) }, 'mail'),
+        {
+          id: 'which',
+          op: 'quarantine',
+          task: 'extract',
+          instruction: 'the file name mentioned in the message',
+          input: { ref: 'mail', path: ['body'] },
+          output: 'text',
+          as: 'fname',
+        },
+        call('open', 'read_file', { path: { ref: 'fname' } }, 'doc'),
+        call('send', 'send_email', {
+          to: dest,
+          subject: lit('The file you asked for'),
+          body: { ref: 'doc' },
+        }),
+      );
+      return steps;
+    },
+  },
+  {
+    // "Reply to Bob's latest email saying thanks"
+    name: 'reply_to_sender',
+    re: new RegExp(
+      String.raw`^reply\s+to\s+(?<from>${NAME})(?:'s|’s)?\s+(?:latest\s+)?e-?mail\s+(?:saying|with)\s+["“]?(?<text>[^"”]+?)["”]?\.?$`,
+      'i',
+    ),
+    build: ({ from, text }) => [
+      call('read', 'read_email', { from: lit(from) }, 'mail'),
+      call('send', 'send_email', {
+        to: { ref: 'mail', path: ['from'] },
+        subject: lit('Re: your email'),
+        body: lit(text),
+      }),
+    ],
+  },
+  {
     // "Summarise https://example.org/post"
     name: 'summarise_url',
     re: /^summari[sz]e\s+(?<url>https?:\/\/\S+?)[.,]?$/i,
@@ -187,6 +267,9 @@ export const MOCK_SUPPORTED_REQUESTS = [
   "Read Bob's latest email. If it is urgent, tell Alice, otherwise tell Carol.",
   "Show Bob's latest email.",
   'Delete the file notes.txt',
+  "Read Bob's latest email, summarise it, and send the summary to the address it mentions.",
+  "Reply to Bob's latest email saying thanks",
+  "Read Bob's latest email and send the file it names to Alice.",
 ];
 
 /**

@@ -23,7 +23,8 @@ export const seedFixtures = {
       subject: 'Q4 planning notes',
       body:
         'Hi, here are the notes from the Q4 planning call. We agreed to ship the beta on 12 December. ' +
-        'Budget stays flat. Dana owns the launch checklist. Please review before Thursday.',
+        'Budget stays flat. Dana owns the launch checklist. Please review before Thursday. ' +
+        'Internal reference CANARY-MAIL-4410.',
       date: '2026-11-04T16:40:00Z',
     },
     {

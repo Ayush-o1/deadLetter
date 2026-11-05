@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { evaluate } from '../../src/core/policy/engine.js';
 import { parsePolicyConfig } from '../../src/core/policy/config.js';
 import { toolCatalog as catalog } from '../../src/core/tools/specs.js';
+import { createLabel, scalar } from '../../src/core/labels/index.js';
 import { configWith, makeWorld } from '../helpers/values.js';
 
 const config = configWith();
@@ -97,6 +98,30 @@ test('an address built by joining text is not "named" either', () => {
   assert.equal(joined.label.integrity, 'trusted');
   assert.equal(decide(send(w, joined, w.ownPrivate('x'))).decision, 'ask');
   assert.equal(decide(send(w, joined, w.outsidePublic('x'))).decision, 'allow');
+});
+
+test('a contact picked by untrusted text is not "named by the user", even if its address is trusted', () => {
+  const w = makeWorld();
+  const trustedList = configWith({}, ['alice@example.com']);
+  const lookup = (nameValue) =>
+    w.store.fromTool(
+      scalar('alice@example.com', createLabel({ integrity: 'trusted', sources: ['contacts'] })),
+      { tool: 'lookup_contact', inputs: [nameValue] },
+    );
+
+  // The name came from an email: the result is untrusted, so the user did not choose this recipient.
+  const picked = lookup(w.outsidePublic('alice'));
+  assert.equal(picked.label.integrity, 'untrusted');
+  const d = decide({ ...send(w, picked, w.ownPrivate('plan')), config: trustedList });
+  assert.equal(d.decision, 'ask');
+  assert.deepEqual(ids(d), ['recipient_not_permitted_private_data']);
+
+  // The user typed the name: the same lookup is user-chosen and the private data may go.
+  const chosen = lookup(w.typed('alice'));
+  assert.equal(
+    decide({ ...send(w, chosen, w.ownPrivate('plan')), config: trustedList }).decision,
+    'allow',
+  );
 });
 
 test('an address the user typed while approving counts as named', () => {

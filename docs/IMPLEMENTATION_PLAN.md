@@ -122,7 +122,7 @@ Exit: end-to-end run through planner → interpreter → policy → tools; pause
 approve / reject / cancel / fail all behave; canary strings from private files
 never appear in audit output.
 
-## Phase 7 — Evaluation framework ☐
+## Phase 7 — Evaluation framework ☑
 
 | Part                            | Tasks                                                                            | Files                                   |
 | ------------------------------- | -------------------------------------------------------------------------------- | --------------------------------------- |
