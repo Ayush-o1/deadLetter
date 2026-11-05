@@ -111,7 +111,8 @@ plain-language explanation. Two layers:
 - **Per-tool template (configurable):** `allow`, `ask`, `deny`,
   `trusted_destination` (the matrix below).
 
-The final decision is the _stricter_ of the two. A missing rule never allows.
+The final decision is the _stricter_ of the two. A missing rule never allows. The full rule table is in
+[POLICY_AND_LABELS.md](POLICY_AND_LABELS.md).
 
 ## 3. The policy matrix for outbound tools
 

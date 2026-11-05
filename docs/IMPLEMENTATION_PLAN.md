@@ -84,7 +84,7 @@ Exit: malformed plans, unknown ops, bad refs, ungrounded literals all rejected;
 untrusted conditions cannot make a call run silently (test with a stub
 authorizer that records the control label it was handed).
 
-## Phase 4 — Policy engine and approval ☐
+## Phase 4 — Policy engine and approval ☑
 
 | Part                               | Tasks                                                                         | Files                                                     |
 | ---------------------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------- |

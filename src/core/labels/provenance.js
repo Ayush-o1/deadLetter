@@ -100,10 +100,14 @@ export class ProvenanceStore {
   /**
    * Turn a tool adapter's description of its result into values.
    * @param {object} spec built with scalar(), record() or list()
-   * @param {{ tool: string, control?: import('./value.js').Value[] }} opts
+   * @param {{ tool: string, control?: object[], inputs?: object[] }} opts
+   *   `inputs` are the argument values the tool was called with. A result
+   *   inherits their labels: if an untrusted value chose which contact or file
+   *   to look up, what comes back is not trustworthy either.
    */
-  fromTool(spec, { tool, control = [] }) {
+  fromTool(spec, { tool, control = [], inputs = [] }) {
     const ctl = this.#owned(control, 'control');
+    const inp = this.#owned(inputs, 'inputs');
     const build = (s) => {
       switch (s?.kind) {
         case 'scalar':
@@ -115,7 +119,7 @@ export class ProvenanceStore {
               readers: s.label.readers,
               sources: [...s.label.sources],
             }),
-            parents: [],
+            parents: inp,
             control: ctl,
             origin: { kind: 'tool', name: tool },
             structure: null,

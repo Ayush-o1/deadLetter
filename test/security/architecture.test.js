@@ -48,3 +48,33 @@ test('core/ does not import from the HTTP, database or runtime layers', () => {
     .map((f) => relative(SRC, f));
   assert.deepEqual(offenders, []);
 });
+
+/** Files (relative to src/) whose code mentions `name`, other than the ones allowed to. */
+function usesOutside(name, allowed) {
+  return sourceFiles(SRC)
+    .filter((f) => new RegExp(`\\b${name}\\b`).test(code(f)))
+    .map((f) => relative(SRC, f))
+    .filter((f) => !allowed.includes(f));
+}
+
+test('only the policy gate can mint authorizations', () => {
+  assert.deepEqual(
+    usesOutside('mintAuthorization', ['core/policy/authorization.js', 'core/policy/gate.js']),
+    [],
+  );
+});
+
+test('only the tool invoker consumes authorizations', () => {
+  assert.deepEqual(
+    usesOutside('consumeAuthorization', ['core/policy/authorization.js', 'core/tools/invoke.js']),
+    [],
+  );
+});
+
+test('the interpreter reaches tools only through injected functions', () => {
+  const text = code(join(SRC, 'core/interpreter/interpreter.js'));
+  assert.doesNotMatch(
+    text,
+    /from\s+['"].*(tools\/invoke|policy\/gate|policy\/engine|authorization)/,
+  );
+});

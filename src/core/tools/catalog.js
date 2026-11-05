@@ -30,7 +30,10 @@ const EFFECTS = new Set(Object.values(EFFECT));
 
 /**
  * @typedef {{ role: string, required?: boolean }} ParamSpec
- * @typedef {{ name: string, title: string, effect: string, params: Record<string, ParamSpec> }} ToolSpec
+ * @typedef {{ name: string, title: string, effect: string, params: Record<string, ParamSpec>,
+ *             namesRecipients?: boolean }} ToolSpec
+ *   namesRecipients: results come from the user's own directory (contacts), so an
+ *   address read from it counts as chosen by the user.
  */
 
 /**
@@ -49,7 +52,14 @@ export function defineCatalog(specs) {
       if (!ROLES.has(p.role)) throw new TypeError(`${spec.name}.${param}: bad role "${p.role}"`);
       params[param] = Object.freeze({ role: p.role, required: p.required !== false });
     }
-    tools.set(spec.name, Object.freeze({ ...spec, params: Object.freeze(params) }));
+    tools.set(
+      spec.name,
+      Object.freeze({
+        ...spec,
+        namesRecipients: spec.namesRecipients === true,
+        params: Object.freeze(params),
+      }),
+    );
   }
   return Object.freeze({
     has: (name) => tools.has(name),

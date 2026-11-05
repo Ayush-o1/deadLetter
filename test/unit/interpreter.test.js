@@ -31,7 +31,12 @@ test('scenario A runs end to end and the labels match the product spec', async (
   assert.equal(send.args.body.label.integrity, 'untrusted');
   assert.equal(send.args.body.label.readers.kind, 'restricted');
   assert.deepEqual(send.args.body.label.readers.principals, []);
-  assert.deepEqual(send.args.body.label.sources, ['email:msg-2', 'quarantine:summarize']);
+  // "user_request" appears because the user's own literal ("Bob") selected which email to read.
+  assert.deepEqual(send.args.body.label.sources, [
+    'email:msg-2',
+    'quarantine:summarize',
+    'user_request',
+  ]);
   assert.deepEqual(send.control, [], 'top-level steps have no control dependencies');
 });
 
@@ -706,4 +711,48 @@ test('items of a tool-result list keep their own labels; the list is the join', 
     ['trusted', 'untrusted', 'untrusted'],
     'items keep their label; the whole list is untrusted',
   );
+});
+
+test('a tool result inherits the labels of the arguments that selected it', async () => {
+  // An untrusted value (extracted from an email) chooses which contact to look up.
+  // The contact record itself is trusted data, but WHICH contact came back was
+  // decided by untrusted text, so the result must not be trusted.
+  const h = makeHarness({ request: "Read Bob's email", quarantine: () => 'mallory' });
+  const plan = {
+    version: 1,
+    steps: [
+      { id: 'a', op: 'call', tool: 'read_email', args: { from: { lit: 'Bob' } }, as: 'mail' },
+      {
+        id: 'b',
+        op: 'quarantine',
+        task: 'extract',
+        input: { ref: 'mail', path: ['body'] },
+        output: 'text',
+        as: 'who',
+      },
+      { id: 'c', op: 'call', tool: 'lookup_contact', args: { name: { ref: 'who' } }, as: 'c' },
+      { id: 'd', op: 'show', value: { ref: 'c', path: ['email'] } },
+    ],
+  };
+  const { shown } = await runPlan(plan, h.ctx);
+  assert.equal(shown[0].value.label.integrity, 'untrusted');
+  assert.equal(
+    shown[0].value.label.readers.kind,
+    'restricted',
+    'and it inherits the privacy of the selector too',
+  );
+});
+
+test('a result selected by a trusted literal keeps the tool-declared label', async () => {
+  const h = makeHarness({ request: 'Look up Alice and show her address' });
+  const plan = {
+    version: 1,
+    steps: [
+      { id: 'a', op: 'call', tool: 'lookup_contact', args: { name: { lit: 'Alice' } }, as: 'c' },
+      { id: 'b', op: 'show', value: { ref: 'c', path: ['email'] } },
+    ],
+  };
+  const { shown } = await runPlan(plan, h.ctx);
+  assert.equal(shown[0].value.label.integrity, 'trusted');
+  assert.equal(shown[0].value.label.readers.kind, 'public');
 });

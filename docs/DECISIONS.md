@@ -60,9 +60,10 @@ Cost: a paraphrased request (e.g. a nickname) fails unless it resolves through
 
 ## D8. Policy = non-overridable floor + per-tool template; stricter wins
 
-Choice. Floor rules (unknown tool, disabled tool, untrusted selector or
-destination, untrusted control dependence) cannot be turned off from the Rules
-tab. Templates are configurable. Final decision = max severity
+Choice. Floor rules (tool not in the catalog, disabled tool, no rule configured,
+untrusted selector or destination, untrusted control dependence) cannot be
+turned off from the Rules tab. A tool that is not in the catalog is denied; a
+known tool with no rule asks, as the product spec requires. Templates are configurable. Final decision = max severity
 (`allow < ask < deny`). Missing configuration can therefore only make a decision
 stricter, never looser.
 
@@ -131,6 +132,33 @@ attributable to the defence.
 
 Choice. A GET can exfiltrate through its query string. The URL is a destination
 argument. An untrusted URL asks; a URL derived from private data is denied.
+
+## D18. A tool's result inherits the labels of the arguments that selected it
+
+Choice (standard information-flow reasoning). Without this, an attacker-chosen
+contact name would return a "trusted" address. The cost is more provenance
+edges; a side effect is that the sources of a result include the user's own
+literal that selected it (for example `user_request`). Because of that,
+"named by the user" (D19) is decided from how a value was created, not from its
+sources.
+
+## D19. "Named by the user" is decided from a value's origin
+
+Choice. The spec says naming a recipient in the request is permission for that
+recipient to receive the data. A destination is _named_ if it is a literal from
+the request, an address typed during approval, or a field returned by a tool the
+catalog marks as the user's own directory. A trusted address from some other
+trusted source is not named, so private data to it asks. Labels are never
+edited to express this, so no label bug can widen who may receive data.
+
+## D20. Authorization tokens bind a call to the policy decision
+
+Choice. The gate mints a single-use token bound to the tool and the identities
+of its argument values; the tool invoker consumes it. This turns "every call goes
+through the policy engine" from a convention into something a test can attack
+(forged, replayed, swapped-argument and cross-tool tokens are all rejected).
+Only `policy/gate.js` may mint and only `tools/invoke.js` may consume; a test
+checks the imports.
 
 ## Open questions (decide at the phase named)
 

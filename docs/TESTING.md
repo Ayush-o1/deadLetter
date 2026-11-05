@@ -54,10 +54,18 @@ includes the seed so the exact graph can be replayed.
 | Plan validation: strict schema, scoping, grounding, limits, forbidden keys; plan preview; tool catalog | `test/unit/plan.test.js` |
 | Interpreter: gate ordering and fail-closed behaviour, forged/foreign approved values, quarantine typing and failure, control flow, loops, limits, cancellation | `test/unit/interpreter.test.js` (uses `test/helpers/harness.js`) |
 
+| Policy engine: spec matrix, fail-closed rules, floor vs templates, control flow, fetch_url, explanations; **every combination of 5 destinations x 4 bodies x 3 control contexts x 4 templates against an independent oracle** | `test/unit/policyEngine.test.js` |
+| Approval state machine: pause, answer once, bad answers, cancel | `test/unit/approvals.test.js` |
+| Tool bypass attempts: no/forged/replayed/cross-tool/swapped-argument tokens, adapter table tampering, unknown approval answers, deny never asks | `test/security/toolBypass.test.js` |
+| Interpreter + gate + approvals + invoker together: scenarios A, C, D (send once / trust / edit / reject / cancel) and a control-flow attack | `test/integration/policyPipeline.test.js` (uses `test/helpers/pipeline.js`) |
+
 The security-critical tests were checked by deliberately breaking the code and
 confirming they fail: a join that forgets untrusted inputs, a fail-open gate, a
 control stack that omits the condition, a file that imports the value minting
-function.
+function, an engine that stops denying private data to untrusted destinations,
+one that stops asking for untrusted selectors or missing rules, a gate that
+approves unrecognised answers, replayable tokens, and tokens that accept swapped
+arguments. Each made at least one test fail.
 
 This file grows each phase; later sections will list the security regression
 suite and the metamorphic tests.

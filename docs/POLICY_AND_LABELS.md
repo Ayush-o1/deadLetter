@@ -1,7 +1,7 @@
 # Labels and provenance
 
-This document describes what is implemented in `src/core/labels/`. The policy
-engine that reads these labels is built in phase 4; its section is added then.
+This document describes what is implemented in `src/core/labels/` (labels and
+provenance) and `src/core/policy/` (the policy engine that reads them).
 
 ## What a label says
 
@@ -85,6 +85,15 @@ The model-facing code (planner, quarantined model) never receives the store.
 `isValue` accepts only values the store minted, and a test fails if any file
 other than `provenance.js` uses the minting function.
 
+### A tool's result inherits its arguments' labels
+
+If an untrusted value chose which contact to look up, the address that comes back
+was effectively chosen by untrusted text, even though the contacts database is
+the user's own. So the interpreter passes the call's arguments as `inputs`, and
+the result's label is the join of what the adapter declares and what the
+arguments carry. A result selected by trusted literals keeps exactly the label
+the adapter gave it. (docs/DECISIONS.md D18.)
+
 ### Control dependencies
 
 When a value is created while the interpreter is inside an `if` or `for_each`,
@@ -125,5 +134,100 @@ an outsider can edit as trusted (see the threat model).
 
 ## Policy
 
-Added in phase 4. The planned matrix is in
-[ARCHITECTURE.md](ARCHITECTURE.md#3-the-policy-matrix-for-outbound-tools).
+`evaluate({tool, args, control, config, catalog})` in `src/core/policy/engine.js`
+is a pure function: labels in, `allow | ask | deny` out, with the rule that fired.
+
+### Argument roles
+
+Each tool argument has a role (`src/core/tools/specs.js`), and the rules are
+written in terms of roles, not individual tools.
+
+| Role          | Meaning               | Examples                                                   |
+| ------------- | --------------------- | ---------------------------------------------------------- |
+| `destination` | where data goes       | `send_email.to`, `fetch_url.url`                           |
+| `selector`    | which thing to act on | `read_file.path`, `read_email.from`, `lookup_contact.name` |
+| `data`        | content being moved   | `send_email.body`                                          |
+| `plain`       | anything else         | `send_email.subject`                                       |
+
+### Two layers; the stricter answer wins (deny > ask > allow)
+
+**Floor** (always applies; cannot be switched off from the Rules tab):
+
+| Rule id                              | Decision | When                                                                         |
+| ------------------------------------ | -------- | ---------------------------------------------------------------------------- |
+| `unknown_tool`                       | deny     | the tool is not in the catalog                                               |
+| `invalid_arguments`                  | deny     | arguments do not match the tool, or are not tracked values                   |
+| `tool_disabled`                      | deny     | the tool is turned off                                                       |
+| `no_rule_configured`                 | ask      | the tool is known but has no entry in the configuration                      |
+| `untrusted_selector`                 | ask      | an untrusted value chooses what to read, look up or delete                   |
+| `untrusted_destination`              | ask      | an untrusted value chooses the destination, and nothing private is sent      |
+| `untrusted_destination_private_data` | **deny** | an untrusted value chooses the destination and private data would go with it |
+| `untrusted_control_flow`             | ask      | the call is inside an `if`/`for_each` that depends on an untrusted value     |
+
+A destination counts as **trusted** if its label is trusted, or its text exactly
+matches an address in the user's trusted-destinations list (normalised to lower
+case). **Private data** means anything in the outgoing content whose readers are
+not `public`; for a send, that is every argument except the destination, and for
+every tool it includes the destination itself, since a URL can carry data in its
+text.
+
+**Template** (the per-tool choice on the Rules tab):
+
+| Template              | Effect                                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `allow`               | adds nothing; only the floor applies                                                                             |
+| `ask`                 | always ask (`template_ask`)                                                                                      |
+| `deny`                | always deny (`template_deny`)                                                                                    |
+| `trusted_destination` | ask (`recipient_not_permitted_private_data`) if the destination is trusted but may not receive this private data |
+
+Defaults: tools with a destination argument use `trusted_destination`;
+destructive tools use `ask`; everything else uses `allow`.
+
+### May this destination receive this private data?
+
+Yes if the user **named** it, or if it is among the readers of every private
+value being sent. A destination is _named by the user_ when it was created as a
+literal from the request (`user_request`), typed in an approval (`user_approval`),
+or read from a tool that represents the user's own contacts. This is decided from
+how the value was created, not from its label: a trusted address that merely
+came from a trusted file is not "named", and neither is one assembled by joining
+text. That is why "send once to the address in this file" still asks when the
+data is private.
+
+### The matrix (checked by an independent oracle in the tests)
+
+| Destination                               | Data     | Decision |
+| ----------------------------------------- | -------- | -------- |
+| named by the user (typed or contact)      | anything | allow    |
+| trusted, not named, among the readers     | private  | allow    |
+| trusted, not named, not among the readers | private  | **ask**  |
+| trusted                                   | public   | allow    |
+| untrusted                                 | public   | **ask**  |
+| untrusted                                 | private  | **deny** |
+
+then raised to at least **ask** if the call is under an untrusted condition, and
+to the template's answer if that is stricter.
+
+### Explanations
+
+Every decision carries an explanation built from fixed templates (never from a
+model): a headline (`Blocked: Send email to “kim@promo-offers.example”`), the
+reasons (which value, where it came from), the rule in words, and what the user
+can do next. Previews are at most 80 characters and cover only the arguments
+that triggered a rule, never message bodies.
+
+### From ask to execution
+
+`createPolicyGate` is the `authorize` function the interpreter calls.
+
+- **allow** → mint a single-use authorization token and execute.
+- **deny** → refuse. Nothing is asked; a human cannot override a deny.
+- **ask** → the run pauses on an approval. Answers: `approve_once`,
+  `approve_and_trust` (remembers the destination, then executes),
+  `edit_destination` (the typed value becomes a user-chosen value, the whole call
+  is judged again; a deny still blocks it; allow or ask proceeds because the user
+  has just reviewed it), `reject`, `cancel`. Any other answer is a refusal.
+
+The tool invoker (`createToolInvoker`) refuses to run any adapter without a token
+that was minted for exactly that tool and those exact argument values, and each
+token works once. Adapters are held inside the invoker and receive plain data.

@@ -9,6 +9,7 @@ export const toolCatalog = defineCatalog([
     name: 'lookup_contact',
     title: 'Look up contact',
     effect: EFFECT.READ,
+    namesRecipients: true,
     params: { name: { role: ROLE.SELECTOR } },
   },
   {

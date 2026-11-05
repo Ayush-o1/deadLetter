@@ -45,7 +45,10 @@ function randomStore(seed) {
     const control = values.length > 0 && rng.chance(0.25) ? pickSome(2) : [];
 
     if (values.length === 0 || roll < 0.25) {
-      values.push(store.fromTool(scalar(`d${i}`, randomLeafLabel(rng, i)), { tool: 't', control }));
+      const inputs = values.length > 0 && rng.chance(0.3) ? pickSome(2) : [];
+      values.push(
+        store.fromTool(scalar(`d${i}`, randomLeafLabel(rng, i)), { tool: 't', control, inputs }),
+      );
     } else if (roll < 0.35) {
       values.push(store.literal(`lit${i}`, { source: 'user_request', control }));
     } else if (roll < 0.43) {

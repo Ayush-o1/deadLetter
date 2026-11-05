@@ -182,7 +182,11 @@ export async function runPlan(planInput, ctx) {
         `The ${tool.title.toLowerCase()} tool failed: ${String(err?.message).slice(0, 200)}`,
       );
     }
-    const result = store.fromTool(spec, { tool: step.tool, control: rt.control });
+    const result = store.fromTool(spec, {
+      tool: step.tool,
+      control: rt.control,
+      inputs: Object.values(finalArgs),
+    });
     if (step.as) rt.scope.define(step.as, result);
     event('step_finished', step, { result, args: finalArgs });
   }

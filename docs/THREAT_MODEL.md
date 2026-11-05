@@ -76,7 +76,7 @@ does read it, has no tools.
 | A7  | Quarantined model is fooled and returns attacker-chosen text | output is typed, labelled untrusted, and has no path to a tool or a destination                  | quarantine tests                       |
 | A8  | Model output tries to carry a label or a tool name           | labels and tool names are never read from model output; schemas are strict                       | malformed-output tests                 |
 | A9  | Attacker tries to get a tool to run without a decision       | `invokeTool` requires an engine-minted decision for exactly that call                            | bypass regression test                 |
-| A10 | Unknown or unconfigured tool                                 | floor rule: ask (disabled: deny)                                                                 | missing-rule tests                     |
+| A10 | Unknown or unconfigured tool                                 | a tool not in the catalog is denied; a known tool with no rule asks; a disabled tool is denied   | missing-rule tests                     |
 | A11 | Private text copied into the audit log                       | only labels and short redacted previews are stored                                               | audit-privacy test with canary strings |
 | A12 | Result view loads attacker content (image URL, script)       | UI renders plain text only; restrictive CSP                                                      | UI test                                |
 | A13 | Plan contains `__proto__`, unusual keys, huge input          | strict schema, key allow-lists, size limits                                                      | validator tests                        |
