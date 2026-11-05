@@ -10,6 +10,13 @@ test('applies defaults', () => {
     nodeEnv: 'development',
     port: 3000,
     databaseUrl: 'postgresql://localhost:5432/x',
+    model: {
+      provider: 'mock',
+      baseUrl: undefined,
+      apiKey: undefined,
+      plannerModel: undefined,
+      quarantineModel: undefined,
+    },
   });
 });
 
@@ -39,4 +46,23 @@ test('reports every problem at once', () => {
     () => loadConfig({ PORT: 'abc' }),
     (err) => /PORT/.test(err.message) && /DATABASE_URL/.test(err.message),
   );
+});
+
+test('a live model provider needs a base URL and a planner model', () => {
+  assert.throws(
+    () => loadConfig({ ...valid, MODEL_PROVIDER: 'openai_compatible' }),
+    /MODEL_BASE_URL/,
+  );
+  const cfg = loadConfig({
+    ...valid,
+    MODEL_PROVIDER: 'openai_compatible',
+    MODEL_BASE_URL: 'http://localhost:11434/v1',
+    PLANNER_MODEL: 'some-model',
+  });
+  assert.equal(cfg.model.provider, 'openai_compatible');
+  assert.equal(cfg.model.apiKey, undefined, 'a key is optional (local servers)');
+});
+
+test('an unknown model provider is rejected', () => {
+  assert.throws(() => loadConfig({ ...valid, MODEL_PROVIDER: 'magic' }), /MODEL_PROVIDER/);
 });

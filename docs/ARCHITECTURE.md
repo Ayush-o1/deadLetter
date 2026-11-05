@@ -233,6 +233,18 @@ It refuses to run unless `decision` was minted by the policy engine for exactly
 this call (tool and argument identities). Tool adapters are not exported
 anywhere else. A regression test tries to bypass it.
 
+### Models and providers
+
+| Piece                    | File                                        | Receives                                                                                                           |
+| ------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| Planner                  | `core/models/planner.js`                    | a frozen `{request, tools}`; tools are static descriptions (names, roles, effects)                                 |
+| Quarantined model        | `core/models/quarantine.js`                 | a frozen `{task, instruction, output, content}`                                                                    |
+| Mock providers (default) | `core/models/providers/mock.js`             | deterministic; the planner recognises a few request shapes (the spec's scenarios) and otherwise says "cannot plan" |
+| Live provider (optional) | `core/models/providers/openaiCompatible.js` | any OpenAI-compatible chat endpoint; tested only against a stubbed `fetch`                                         |
+
+A test fails if code under `core/models/` imports tools, the fake world,
+fixtures, values, the interpreter or the policy engine.
+
 ## 8. Layers of the application
 
 ```

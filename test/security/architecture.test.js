@@ -78,3 +78,20 @@ test('the interpreter reaches tools only through injected functions', () => {
     /from\s+['"].*(tools\/invoke|policy\/gate|policy\/engine|authorization)/,
   );
 });
+
+test('model code cannot reach tools, the fake world, fixtures, values or the interpreter', () => {
+  const forbidden =
+    /from\s+['"][^'"]*(tools\/adapters|tools\/world|tools\/fixtures|tools\/invoke|labels\/provenance|labels\/value|interpreter\/|policy\/)/;
+  const offenders = sourceFiles(join(SRC, 'core/models'))
+    .filter((f) => forbidden.test(code(f)))
+    .map((f) => relative(SRC, f));
+  assert.deepEqual(offenders, []);
+});
+
+test('the fake tool adapters are only imported by wiring code, never by the engine', () => {
+  const offenders = sourceFiles(join(SRC, 'core'))
+    .filter((f) => !relative(SRC, f).startsWith('core/tools/'))
+    .filter((f) => /tools\/(adapters|world|fixtures)/.test(code(f)))
+    .map((f) => relative(SRC, f));
+  assert.deepEqual(offenders, []);
+});

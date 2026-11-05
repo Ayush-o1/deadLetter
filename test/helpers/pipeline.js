@@ -21,7 +21,13 @@ const untrustedMail = createLabel({
 });
 const publicFile = createLabel({ integrity: 'untrusted', sources: ['file:brief.txt'] });
 
-export function makePipeline({ config = configWith(), request, quarantine, files = {} } = {}) {
+export function makePipeline({
+  config = configWith(),
+  request,
+  quarantine,
+  files = {},
+  adapters: customAdapters,
+} = {}) {
   const store = new ProvenanceStore();
   const approvals = new ApprovalManager();
   const sent = []; // what actually "left the machine"
@@ -30,7 +36,7 @@ export function makePipeline({ config = configWith(), request, quarantine, files
   const trusted = [];
   let currentConfig = config;
 
-  const adapters = {
+  const adapters = customAdapters ?? {
     lookup_contact: ({ name }) =>
       record({
         name: scalar(name, createLabel({ integrity: 'trusted', sources: ['contacts'] })),

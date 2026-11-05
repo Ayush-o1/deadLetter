@@ -98,7 +98,7 @@ Exit: exhaustive matrix test (every destination × data × control-label ×
 template combination); unknown/disabled tools tested; direct tool invocation
 without a token fails.
 
-## Phase 5 — Models and fake tools ☐
+## Phase 5 — Models and fake tools ☑
 
 | Part                             | Tasks                                                            | Files                                             |
 | -------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------- |

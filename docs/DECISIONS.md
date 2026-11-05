@@ -100,6 +100,13 @@ works with local servers) is added behind the same interface in phase 5, and its
 use is never required by tests. No API access is assumed: the project must be
 fully usable with the mock provider.
 
+### D12a. Mock planner scope
+
+The mock planner is a fixed set of request patterns, not a model. It exists so
+the whole product runs and is testable without any API. A request outside those
+patterns is reported as `cannot_plan` rather than guessed. The live provider is
+how arbitrary requests work, with the same validation applied to its plans.
+
 ## D13. Few dependencies; no helmet, no dotenv
 
 Choice. Runtime: `express`, `@prisma/client`, `@prisma/adapter-pg`, `pg`, `zod`.

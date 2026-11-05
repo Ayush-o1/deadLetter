@@ -59,13 +59,18 @@ includes the seed so the exact graph can be replayed.
 | Tool bypass attempts: no/forged/replayed/cross-tool/swapped-argument tokens, adapter table tampering, unknown approval answers, deny never asks | `test/security/toolBypass.test.js` |
 | Interpreter + gate + approvals + invoker together: scenarios A, C, D (send once / trust / edit / reject / cancel) and a control-flow attack | `test/integration/policyPipeline.test.js` (uses `test/helpers/pipeline.js`) |
 
+| Fake tools: label of every field, lookups, validation, egress recording, world isolation, canaries in private fixtures | `test/unit/fakeTools.test.js` |
+| Models: planner receives exactly `{request, tools}` and no world data; failure/invalid/invented-recipient handling; mock planner coverage and determinism; quarantine isolation; mock extraction | `test/unit/models.test.js` |
+| Live provider (stubbed fetch): request shapes, no tools offered to the quarantined model, delimiter escaping, error paths never leak the key | `test/unit/liveProvider.test.js` |
+| Scenarios A, B, C, D, E and control flow through the real fake tools, checking what actually left the machine | `test/integration/fakeToolsPipeline.test.js` |
+
 The security-critical tests were checked by deliberately breaking the code and
 confirming they fail: a join that forgets untrusted inputs, a fail-open gate, a
 control stack that omits the condition, a file that imports the value minting
 function, an engine that stops denying private data to untrusted destinations,
 one that stops asking for untrusted selectors or missing rules, a gate that
 approves unrecognised answers, replayable tokens, and tokens that accept swapped
-arguments. Each made at least one test fail.
+arguments. A planner that is handed extra data and a model module that imports the fake world were also caught. Each made at least one test fail.
 
 This file grows each phase; later sections will list the security regression
 suite and the metamorphic tests.
