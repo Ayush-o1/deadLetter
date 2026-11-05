@@ -356,9 +356,9 @@ textarea.input {
   font-weight: 700;
   letter-spacing: 0.01em;
 }
+/* No opacity: fading the text drops it below the 4.5:1 contrast minimum on the badge colour. */
 .badge__by {
   font-weight: 500;
-  opacity: 0.85;
   font-size: 12px;
 }
 .badge--allow {

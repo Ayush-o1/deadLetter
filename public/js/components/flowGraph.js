@@ -142,7 +142,9 @@ function diagram(graph, step, onSelect) {
       width,
       height,
       viewBox: `0 0 ${width} ${height}`,
-      role: 'img',
+      // A group, not an image: the boxes inside are focusable buttons, and a screen reader
+      // treats everything inside role="img" as non-interactive.
+      role: 'group',
       'aria-label': 'Diagram of where each value came from',
     },
     ...edges,

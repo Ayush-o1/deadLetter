@@ -89,6 +89,9 @@ includes the seed so the exact graph can be replayed.
 
 | **Audit privacy from every direction** (found in the final audit): private text used as a destination or a selector, in policy explanations and in tool errors, bounded to the documented preview limit; error messages never quote arguments; a run cancelled while planning stays cancelled | `test/security/auditLeakage.test.js`, `test/unit/fakeTools.test.js`, `test/unit/interpreter.test.js` |
 
+| Accessibility regressions found in the final audit: badge secondary text keeps at least 4.5:1 contrast (computed from real styles); the flow diagram is a group of labelled buttons, not an image | `test/ui/a11y.test.js` |
+| **A rehearsal of `docs/DEMO.md`**: performs the demo's steps in a real browser, asserts what the presenter is told to point at, and checks the guide's numbers against a fresh evaluation, so the guide cannot drift | `test/ui/demo.test.js` |
+
 The end-to-end scenarios requested in the project brief map to tests as follows:
 
 | Scenario                   | Test                                                                                  |
