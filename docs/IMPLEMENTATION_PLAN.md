@@ -71,7 +71,7 @@ Exit: unit tests for creation, propagation, restrictive edge cases (empty reader
 set, public ∩ set, untrusted parent among many, deep chains); checker and
 implementation agree on thousands of random graphs.
 
-## Phase 3 — Plans and interpreter ☐
+## Phase 3 — Plans and interpreter ☑
 
 | Part                         | Tasks                                                                                                                         | Files                                    |
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |

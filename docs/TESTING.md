@@ -51,5 +51,13 @@ test/
 Random tests use a seeded generator (`test/helpers/prng.js`); a failure message
 includes the seed so the exact graph can be replayed.
 
+| Plan validation: strict schema, scoping, grounding, limits, forbidden keys; plan preview; tool catalog | `test/unit/plan.test.js` |
+| Interpreter: gate ordering and fail-closed behaviour, forged/foreign approved values, quarantine typing and failure, control flow, loops, limits, cancellation | `test/unit/interpreter.test.js` (uses `test/helpers/harness.js`) |
+
+The security-critical tests were checked by deliberately breaking the code and
+confirming they fail: a join that forgets untrusted inputs, a fail-open gate, a
+control stack that omits the condition, a file that imports the value minting
+function.
+
 This file grows each phase; later sections will list the security regression
 suite and the metamorphic tests.

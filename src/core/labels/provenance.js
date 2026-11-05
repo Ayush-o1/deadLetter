@@ -180,6 +180,22 @@ export class ProvenanceStore {
     });
   }
 
+  /**
+   * Gather existing values into a list value (for example the items extracted by
+   * the quarantined model). The list's label is the join of its items.
+   */
+  collect(items, { control = [] } = {}) {
+    const owned = this.#owned(items, 'items');
+    return this.#add({
+      data: owned.map((v) => v.data),
+      intrinsic: IDENTITY,
+      parents: owned,
+      control: this.#owned(control, 'control'),
+      origin: { kind: 'derived', name: 'collect' },
+      structure: Object.freeze({ type: 'list', items: Object.freeze([...owned]) }),
+    });
+  }
+
   /** Field `name` of a record value. Returns the field's own value and label. */
   field(recordValue, name) {
     this.#owned([recordValue], 'record');
