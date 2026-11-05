@@ -3,6 +3,7 @@
 import { existsSync } from 'node:fs';
 import express from 'express';
 import { createErrorHandler, notFoundHandler } from './http/errors.js';
+import { localOnly } from './http/middleware/localOnly.js';
 import { securityHeaders } from './http/middleware/securityHeaders.js';
 import { approvalsRouter } from './http/routes/approvals.js';
 import { healthRouter } from './http/routes/health.js';
@@ -15,12 +16,14 @@ import { runsRouter } from './http/routes/runs.js';
  * @param {{ db: object, services?: object, publicDir?: string, logger?: { error: (...a: unknown[]) => void } }} deps
  *   services: from createServices(); without it only the health route is mounted
  *   publicDir: folder with the browser app; served after the API routes
+ *   allowedHosts: Host header names that are served (default: loopback only)
  */
-export function createApp({ db, services, publicDir, logger = console }) {
+export function createApp({ db, services, publicDir, allowedHosts, logger = console }) {
   const app = express();
   app.disable('x-powered-by');
 
   app.use(securityHeaders);
+  app.use(localOnly({ allowedHosts }));
   app.use(express.json({ limit: '100kb' }));
 
   app.use('/api/health', healthRouter(db));

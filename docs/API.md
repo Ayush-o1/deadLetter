@@ -8,6 +8,11 @@ authenticate: do not expose this server to a network.
 
 Every security rule is enforced in the backend; the UI is only a client of this API.
 
+Requests are accepted only for loopback `Host` names (plus any in `ALLOWED_HOSTS`) and
+only without an `Origin`, or with this server's own. Anything else is `403`
+(`forbidden_host`, `forbidden_origin`). This stops a web page in your browser from using
+the API; it is not authentication.
+
 ## Runs
 
 | Method and path                    | Does                                                                                                                                                                                                             | Success |

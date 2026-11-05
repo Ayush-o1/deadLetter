@@ -9,6 +9,8 @@ const schema = z
     PORT: z.coerce.number().int().min(0).max(65535).default(3000),
     // Loopback by default. Set HOST=0.0.0.0 only if you understand there is no login.
     HOST: z.string().min(1).default('127.0.0.1'),
+    // Extra Host header names to answer to (comma separated), on top of localhost / 127.0.0.1 / [::1].
+    ALLOWED_HOSTS: z.string().optional(),
     DATABASE_URL: z
       .string({ error: 'DATABASE_URL is required (see .env.example)' })
       .refine((v) => /^postgres(ql)?:\/\//.test(v), 'DATABASE_URL must be a postgresql:// URL'),
@@ -50,7 +52,7 @@ export function loadDotEnv() {
  * Throws an Error listing every problem, so a bad setup is fixed in one go.
  *
  * @param {Record<string, string | undefined>} env
- * @returns {{ nodeEnv: string, port: number, host: string, databaseUrl: string,
+ * @returns {{ nodeEnv: string, port: number, host: string, allowedHosts: string[], databaseUrl: string,
  *            model: { provider: string, baseUrl?: string, apiKey?: string,
  *                     plannerModel?: string, quarantineModel?: string } }}
  */
@@ -65,6 +67,17 @@ export function loadConfig(env = process.env) {
     nodeEnv: d.NODE_ENV,
     port: d.PORT,
     host: d.HOST,
+    allowedHosts: [
+      ...new Set([
+        'localhost',
+        '127.0.0.1',
+        '[::1]',
+        ...(d.HOST === '0.0.0.0' || d.HOST === '::' ? [] : [d.HOST]),
+        ...(d.ALLOWED_HOSTS?.split(',')
+          .map((h) => h.trim())
+          .filter(Boolean) ?? []),
+      ]),
+    ],
     databaseUrl: d.DATABASE_URL,
     model: {
       provider: d.MODEL_PROVIDER,

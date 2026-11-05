@@ -200,8 +200,11 @@ purpose. A set containing only wins would show nothing.
 
 Choice. There are no accounts, so `HOST` defaults to `127.0.0.1`. Binding to all
 interfaces is possible by setting `HOST`, and the README says not to. No CORS
-headers are sent and there are no cookies, so a web page on another origin
-cannot use the API with the user's credentials (there are none).
+headers are sent and there are no cookies. Binding to loopback does not stop a web
+page in your own browser from reaching the API, so a small middleware also serves only
+loopback `Host` names (defeating DNS rebinding) and refuses a foreign `Origin`
+(cross-site requests). Extra names can be added with `ALLOWED_HOSTS`. This is not
+authentication; it narrows who can reach a no-login service from a browser.
 
 ## D26. Steps are stored as JSON plus a few indexed columns
 

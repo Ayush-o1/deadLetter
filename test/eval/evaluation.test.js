@@ -220,3 +220,27 @@ test('docs/EVALUATION.md contains exactly the tables of a fresh run (the documen
   assert.deepEqual(missing, [], 'run `npm run eval` and refresh the tables in docs/EVALUATION.md');
   assert.ok(doc.includes(report.meta.scenarioSet), 'scenario set hash is current');
 });
+
+test('the results table in README.md matches a fresh run (it cannot go stale)', () => {
+  const readme = readFileSync(new URL('../../README.md', import.meta.url), 'utf8');
+  const row = (label) => readme.split('\n').find((l) => l.startsWith('|') && l.includes(label));
+  const cells = (label) =>
+    row(label)
+      .replaceAll('*', '')
+      .split('|')
+      .map((c) => c.trim());
+  const S = report.summary;
+  const attacks = (k) => `${S[k].attacks.succeeded} of ${S[k].attacks.total}`;
+  const benign = (k) => `${S[k].benign.completed} of ${S[k].benign.total}`;
+
+  assert.deepEqual(cells('No defence').slice(2, 4), [attacks('none'), benign('none')]);
+  assert.deepEqual(cells('Session taint').slice(2, 4), [
+    attacks('session_taint'),
+    benign('session_taint'),
+  ]);
+  assert.deepEqual(cells('| **deadLetter**').slice(2, 4), [
+    attacks('deadletter'),
+    benign('deadletter'),
+  ]);
+  assert.equal(cells('if the user approves every prompt')[2], attacks('deadletter_user_approves'));
+});

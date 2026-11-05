@@ -159,11 +159,14 @@ Scenario selector, playground, three-way comparison, clean-vs-attacked diff,
 dashboard, report export, one static graph per tool call (under about 30 nodes).
 Exit: all four tabs work end to end.
 
-## Phase 11 — QA and release ☐
+## Phase 11 — QA and release ☑
 
-Full suite, coverage review, dependency review (`npm audit`, unused deps),
-GitHub Actions CI with a Postgres service, final README and docs review,
-screenshots from the real UI, final repository review, tag.
+Done: coverage review (about 99% of lines; security-critical files at or near 100%), the
+missing failure-path tests, `npm audit` clean, performance measured (full evaluation in
+tens of milliseconds, a task in about 12 ms, History search in about 3 ms over 3000 runs),
+a hardening gap closed (DNS rebinding and cross-site requests), GitHub Actions CI with a
+Postgres service and Chrome, the final README, a documentation-accuracy pass, screenshots
+from the real UI, and a clean-clone check that follows the README from scratch.
 
 ## Cross-cutting documents
 

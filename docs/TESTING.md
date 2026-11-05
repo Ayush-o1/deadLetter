@@ -26,13 +26,19 @@ to use a different test database (CI does).
 
 ```
 test/
-  helpers/       server starter, test database helpers
-  unit/          pure functions: config, (later) labels, policy, plans
-  integration/   HTTP + database
+  helpers/       server and browser starters, test database, builders, a full wired pipeline
+  unit/          pure functions: labels, plans, interpreter, policy, approvals, tools, models, config
+  integration/   run service, repositories, policy pipeline, failure paths (database and HTTP)
+  e2e/           the whole application over HTTP on PostgreSQL
+  eval/          the evaluation: exact outcomes, leakage, metamorphic, reproducibility
+  security/      regression tests for security behaviour: bypass attempts, architecture guards, local-only
+  ui/            the real UI in Chrome: Run, Rules, History, Lab, XSS, accessibility, layout
   reference/     independent label checker (imports nothing from src/)
-  security/      (later) regression tests for security behaviour
-  e2e/           (later) full scenarios
 ```
+
+Coverage on `src/` is about 99% of lines. Every security-critical file (labels, the
+interpreter, the policy engine, gate, tokens and tool invoker, audit and redaction) is at
+or near 100%; the uncovered lines are start-up code and a few defensive branches.
 
 ## Coverage so far
 
@@ -77,6 +83,9 @@ includes the seed so the exact graph can be replayed.
 | The real UI in the installed Chrome (puppeteer-core): scenarios A and D through the screens, approve / reject / edit, Why? and the flow explorer, Rules and History, **XSS inertness** (markup in an email shows as text and never runs; the element builder refuses `style`, string handlers and external links), CSP violations, phone layout without sideways scroll, accessibility basics | `test/ui/ui.test.js` (skipped with a message if no Chrome is found; set `CHROME_PATH` to point at one) |
 
 | The Lab in Chrome: scenario comparison and the clean-versus-attacked diff (only the surplus attacker action is flagged), normal-task costs, the playground with hostile text, the honest-limit note, **dashboard numbers cross-checked against the stored report**, table view, exports, earlier evaluations, phone layout | `test/ui/lab.test.js` |
+
+| Failure paths: the pause cannot be recorded (approval withdrawn, nothing sent), the final save fails, an unreachable live model, memory bounded for many runs; the evaluation's worst-case model and undefended agent | `test/integration/failurePaths.test.js`, `test/unit/evalSupport.test.js` |
+| **Local-only protection**: DNS rebinding (hostile Host), cross-site requests (foreign, `null` and mismatched-port Origin), accepted own origin and no-Origin clients | `test/security/localOnly.test.js` |
 
 The end-to-end scenarios requested in the project brief map to tests as follows:
 

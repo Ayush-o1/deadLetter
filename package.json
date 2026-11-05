@@ -4,7 +4,6 @@
   "description": "An action firewall for AI agents: untrusted text cannot choose which tool runs or where private data goes.",
   "private": true,
   "type": "module",
-  "license": "MIT",
   "engines": {
     "node": "^22.18.0 || ^24.11.0"
   },

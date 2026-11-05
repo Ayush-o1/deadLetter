@@ -9,9 +9,9 @@ Beurer-Kellner et al., _Design Patterns for Securing LLM Agents against Prompt
 Injections_ (arXiv:2506.08837). What is established research and what is a
 choice made in this repository is spelled out in [DECISIONS.md](DECISIONS.md).
 
-> Status: this document describes the **target** architecture. The
-> implementation plan ([IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md)) says
-> which parts exist today. Sections are marked when something is not built yet.
+> Status: this document describes the architecture **as implemented**. Where a
+> design choice was made rather than taken from the research, it is explained in
+> [DECISIONS.md](DECISIONS.md).
 
 ## 1. The one idea
 
