@@ -2,7 +2,7 @@
 
 deadLetter lets an AI agent read untrusted text (emails, web pages, files) without
 that text being able to choose which tool runs or where your private data goes.
-This guide walks through the screens. Everything here uses **fake tools and demo
+This guide walks through the four screens: Run, Rules, History and Lab. Everything here uses **fake tools and demo
 models**: no real email is sent and nothing leaves your machine.
 
 Start the app (`npm start`) and open <http://127.0.0.1:3000>.
@@ -100,6 +100,47 @@ Open a task to see its steps, decisions and reasons, its result, and a timeline.
 record keeps **labels, sources and short previews**, never whole private documents:
 the log would otherwise be a second place to leak from. A task that was running when
 the server restarted is shown as **Interrupted**.
+
+## Lab
+
+The Lab is where you test the idea instead of taking it on trust. Everything in it runs
+on the fake tools, with the same task and the same world for every defence.
+
+### Scenarios
+
+![A scenario against every defence, with the clean-versus-attacked diff](screenshots/lab-scenario.png)
+
+Pick one of the 20 prepared scenarios (11 attacks, 9 normal tasks). You see the task and,
+for an attack, the exact text the attacker placed and where. **Run against all defences**
+shows four cards: no defence, a simple session-taint rule, deadLetter, and deadLetter if
+you approved every prompt. Each card says what happened and lists the actions that
+actually ran, were blocked, or were put to you. Normal tasks matter as much as attacks:
+a defence that blocks everything is not a product.
+
+**Clean versus attacked** runs the task twice, once with the attacker's text in place and
+once without, and lists any action that only the attack caused. For an unprotected agent
+it shows the extra send. For deadLetter the plan is made once from your request, so it
+shows "Identical actions". Text derived from the content, such as a summary, can differ
+and is not compared.
+
+### Your own attack
+
+Choose a task, where the text goes, what an obedient agent should then try to do, and
+write the text. The menus are fixed presets and your text is only ever shown as text.
+Some attempts get through, such as a misleading summary sent to a recipient you allowed,
+and the Lab shows that honestly.
+
+### Evaluation
+
+![The evaluation dashboard](screenshots/lab-evaluation.png)
+
+**Run the full evaluation** runs every scenario against every defence and stores the
+report. The two charts show the attack success rate (lower is better) and the share of
+normal tasks completed (higher is better), with the count behind every percentage. Below
+them are the attacks that succeeded, the normal tasks that did not complete and why, and
+a row for every scenario. Export the report as Markdown or JSON. The limits are stated at
+the top: mock models, a worst-case attacker, this scenario set only, not a proof. The
+method and every figure are explained in [EVALUATION.md](EVALUATION.md).
 
 ## What the app does not do
 

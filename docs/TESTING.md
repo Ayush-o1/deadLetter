@@ -76,6 +76,8 @@ includes the seed so the exact graph can be replayed.
 
 | The real UI in the installed Chrome (puppeteer-core): scenarios A and D through the screens, approve / reject / edit, Why? and the flow explorer, Rules and History, **XSS inertness** (markup in an email shows as text and never runs; the element builder refuses `style`, string handlers and external links), CSP violations, phone layout without sideways scroll, accessibility basics | `test/ui/ui.test.js` (skipped with a message if no Chrome is found; set `CHROME_PATH` to point at one) |
 
+| The Lab in Chrome: scenario comparison and the clean-versus-attacked diff (only the surplus attacker action is flagged), normal-task costs, the playground with hostile text, the honest-limit note, **dashboard numbers cross-checked against the stored report**, table view, exports, earlier evaluations, phone layout | `test/ui/lab.test.js` |
+
 The end-to-end scenarios requested in the project brief map to tests as follows:
 
 | Scenario                   | Test                                                                                  |

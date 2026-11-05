@@ -153,7 +153,7 @@ Text from untrusted sources is only ever set with `textContent`.
 Exit: manual verification in a browser plus DOM-level tests; empty and error
 states exist.
 
-## Phase 10 — Lab and information-flow explorer ☐
+## Phase 10 — Lab and information-flow explorer ☑
 
 Scenario selector, playground, three-way comparison, clean-vs-attacked diff,
 dashboard, report export, one static graph per tool call (under about 30 nodes).

@@ -79,6 +79,22 @@ try {
   await page.waitForSelector('.hist__detail .trace');
   await shot('history');
 
+  await go('#/lab', '.scn');
+  await page.click('[data-scenario="attack-01-email-forward-inbox"]');
+  await page.click('[data-action=run-scenario]');
+  await page.waitForSelector('.diff');
+  await new Promise((r) => setTimeout(r, 300));
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await shot('lab-scenario', { fullPage: true });
+
+  await page.click('[data-tab=evaluation]');
+  await page.waitForSelector('[data-action=run-eval]');
+  await page.click('[data-action=run-eval]');
+  await page.waitForSelector('.chart__svg');
+  await new Promise((r) => setTimeout(r, 300));
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await shot('lab-evaluation', { fullPage: true });
+
   console.log(`Saved screenshots to ${OUT}`);
   if (problems.length > 0) console.log('Browser problems:', problems);
 } finally {

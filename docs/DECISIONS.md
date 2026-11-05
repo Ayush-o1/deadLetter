@@ -233,6 +233,16 @@ screenshot script only. UI tests skip with a clear message if no Chrome is found
 Choice. The plan put the explorer in phase 10, but the Run screen's "Why? / Trace"
 needs it, so the component is delivered with phase 9; phase 10 adds the Lab.
 
+## D30. Charts: few, honest, and drawn by hand
+
+Choice. The dashboard has two horizontal bar charts as plain SVG, no chart library. They
+follow the charting guidance the project adopted: thin bars with a rounded data end
+anchored at the baseline, a recessive grid, a direct label on every bar with the count
+behind the percentage, text in ink rather than series colour, series colours checked for
+colour-blind separation (`scripts/validate_palette.js`: orange, blue, aqua), a hatched
+texture on the "user approves everything" bar so it is not distinguished by colour alone,
+and a table view of every chart. A percentage is never shown without its denominator.
+
 ## Open questions (decide at the phase named)
 
 - Phase 5: which live provider to document first. Needs an API key from the user.

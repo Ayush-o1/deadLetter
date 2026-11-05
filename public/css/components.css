@@ -990,3 +990,173 @@ textarea.input {
 .callout__body {
   min-width: 0;
 }
+
+/* ---- Charts ---------------------------------------------------------------------------- */
+.chart {
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.chart__head {
+  display: grid;
+  gap: 4px;
+}
+.chart__caption {
+  min-height: 2.8em;
+}
+.chart__meta {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+}
+.chart__better {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--ink-2);
+}
+.chart__svg {
+  width: 100%;
+  height: auto;
+  font-family: var(--font);
+}
+.chart__axis {
+  stroke: var(--line-strong);
+  stroke-width: 1.2;
+}
+.chart__grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.chart__tick {
+  font-size: 11px;
+  fill: var(--muted);
+}
+.chart__label {
+  font-size: 13px;
+  fill: var(--ink);
+  font-weight: 550;
+}
+.chart__value {
+  font-size: 14px;
+  font-weight: 700;
+  fill: var(--ink);
+}
+.chart__count {
+  font-size: 12px;
+  fill: var(--muted);
+}
+.chart__bar--none {
+  fill: var(--series-none);
+}
+.chart__bar--taint {
+  fill: var(--series-taint);
+}
+.chart__bar--dl {
+  fill: var(--series-dl);
+}
+.chart__hatch {
+  fill: url(#hatch);
+}
+.chart__hatch-line {
+  stroke: #fff;
+  stroke-width: 2.2;
+  opacity: 0.85;
+}
+.chart__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+.chart__table th,
+.chart__table td {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* ---- Lab results ------------------------------------------------------------------------ */
+.outcome {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+.compare {
+  display: grid;
+  gap: 14px;
+}
+.compare--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.compare--4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.compare__col {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  padding: 14px 15px;
+}
+.compare__sub {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  font-weight: 700;
+  margin-top: 4px;
+}
+.compare__leak {
+  color: var(--deny);
+  font-weight: 600;
+}
+.acts {
+  display: grid;
+  gap: 6px;
+}
+.act {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 2px 8px;
+  align-items: start;
+  font-size: 13px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+}
+.act .icon {
+  margin-top: 3px;
+}
+.act--ok .icon {
+  color: var(--allow);
+}
+.act--bad .icon {
+  color: var(--deny);
+}
+.act--ask .icon {
+  color: var(--ask);
+}
+.act__main {
+  overflow-wrap: anywhere;
+}
+.act__state {
+  grid-column: 2;
+  color: var(--ink-2);
+}
+.act .chip {
+  grid-column: 2;
+  justify-self: start;
+}
+.act--extra {
+  border-color: #eab6b0;
+  background: #fff6f5;
+}
+.diff {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.diff .card {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}

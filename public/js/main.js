@@ -3,6 +3,7 @@ import { api } from './api.js';
 import { h, mount } from './dom.js';
 import { icon, postmark } from './icons.js';
 import { renderHistory } from './views/history.js';
+import { renderLab } from './views/lab.js';
 import { renderRules } from './views/rules.js';
 import { renderRun } from './views/run.js';
 
@@ -10,6 +11,7 @@ const VIEWS = {
   run: { label: 'Run', render: renderRun },
   rules: { label: 'Rules', render: renderRules },
   history: { label: 'History', render: renderHistory },
+  lab: { label: 'Lab', render: renderLab },
 };
 
 const app = document.getElementById('app');

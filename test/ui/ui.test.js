@@ -1,64 +1,20 @@
 // The real UI in a real browser (the installed Chrome, driven by puppeteer-core).
 // Skipped when no Chrome is found, so the suite still runs anywhere.
-import { test, before, after, beforeEach } from 'node:test';
+import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { seedFixtures } from '../../src/core/tools/fixtures/seed.js';
 import { makeApp } from '../helpers/app.js';
-import { resetDb } from '../helpers/testDb.js';
-import { chromePath, launch } from '../helpers/browser.js';
+import { SKIP, app, count, go, open, planAndRun, text, useUi } from '../helpers/ui.js';
 
-const SKIP = chromePath() ? false : 'no Chrome found (set CHROME_PATH)';
 const A = "Read Bob's latest email, summarise it, and send the summary to Alice.";
 const D = 'Read brief.txt and email its summary to the project lead.';
 
-let app;
-let browser;
-before(async () => {
-  if (SKIP) return;
-  app = await makeApp();
-  ({ browser } = await launch());
-});
-// Every test starts from the same clean state: no runs, default rules.
-beforeEach(async () => {
-  if (SKIP) return;
-  await resetDb(app.db);
-  await app.services.start();
-});
-after(async () => {
-  await browser?.close();
-  await app?.close();
-});
-
-/** A fresh page with error tracking, opened at `hash`. */
-async function open(hash = '#/run', { width = 1440, height = 900, baseUrl } = {}) {
-  const page = await browser.newPage();
-  await page.setViewport({ width, height });
-  const problems = [];
-  page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
-  page.on('console', (m) => m.type() === 'error' && problems.push(`console: ${m.text()}`));
-  await page.goto(`${baseUrl ?? app.baseUrl}/${hash}`, { waitUntil: 'networkidle0' });
-  return { page, problems };
-}
-/** Hash navigation does not reload the page, so wait for the new view to render. */
-async function go(page, hash, readySelector) {
-  await page.evaluate((h) => (window.location.hash = h), hash);
-  await page.waitForSelector(readySelector);
-}
-const text = (page, selector) => page.$eval(selector, (el) => el.textContent);
-const count = (page, selector) => page.$$eval(selector, (els) => els.length);
-
-async function planAndRun(page, request) {
-  await page.$eval('.task__input', (el) => (el.value = ''));
-  await page.type('.task__input', request);
-  await page.click('.task .btn--primary');
-  await page.waitForSelector('.plan');
-  await page.click('[data-action=run]');
-}
+useUi();
 
 test('the app loads with no console errors and no CSP violations', { skip: SKIP }, async () => {
   const { page, problems } = await open();
   assert.match(await page.title(), /Run · deadLetter/);
-  assert.equal(await count(page, '.nav__link'), 3);
+  assert.equal(await count(page, '.nav__link'), 4);
   assert.match(await text(page, '.nav__link[aria-current="page"]'), /^Run/);
   assert.deepEqual(problems, []);
   await page.close();
@@ -369,7 +325,7 @@ test(
   'layout: no horizontal scrolling on a phone, and the empty decisions panel stays out of the way',
   { skip: SKIP },
   async () => {
-    for (const hash of ['#/run', '#/rules', '#/history']) {
+    for (const hash of ['#/run', '#/rules', '#/history', '#/lab']) {
       const { page } = await open(hash, { width: 390, height: 844 });
       await new Promise((r) => setTimeout(r, 300));
       const overflow = await page.evaluate(

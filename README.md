@@ -16,6 +16,8 @@ and does not claim.
 
 ![The Run screen with an approval waiting](docs/screenshots/run-approval.png)
 
+![The Lab: the same attack against three defences](docs/screenshots/lab-scenario.png)
+
 ## How it works, briefly
 
 1. A **planner** sees only your request and writes a short, validated plan.

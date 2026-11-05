@@ -21,7 +21,7 @@ export default [
   },
   {
     // Functions passed to page.evaluate() run inside the browser.
-    files: ['test/ui/**/*.js', 'scripts/screenshots.js'],
+    files: ['test/ui/**/*.js', 'test/helpers/ui.js', 'scripts/screenshots.js'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
   {

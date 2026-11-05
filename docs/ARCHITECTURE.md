@@ -303,15 +303,15 @@ stateDiagram-v2
 ## 8b. The browser app (`public/`)
 
 Plain HTML, CSS and ES modules; no build step and no framework. `index.html` loads
-`js/main.js`, a hash router (`#/run`, `#/rules`, `#/history`) over three views.
+`js/main.js`, a hash router (`#/run`, `#/rules`, `#/history`, `#/lab`) over four views.
 
 ```
 public/js/
   dom.js          the only way DOM is created (text nodes; allow-listed attributes)
   api.js          the only place that talks to the server
   format.js       wording for statuses, decisions and labels
-  components/     chips, plan preview, trace, approval card, flow explorer
-  views/          run, rules, history
+  components/     chips, plan preview, trace, approval card, flow explorer, charts, lab results
+  views/          run, rules, history, lab
 ```
 
 Design rules: everything shown comes from the API; no security decision is made in

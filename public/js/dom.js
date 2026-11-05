@@ -36,6 +36,7 @@ const ATTRS = new Set([
   'multiple',
   'href',
   'hidden',
+  'download',
 ]);
 const BOOLEAN = new Set([
   'disabled',
@@ -96,6 +97,9 @@ const SVG_ATTRS = new Set([
   'stroke-linecap',
   'stroke-linejoin',
   'stroke-dasharray',
+  'patternUnits',
+  'dx',
+  'fill-opacity',
   'cx',
   'cy',
   'r',
