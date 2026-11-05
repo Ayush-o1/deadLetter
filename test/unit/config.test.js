@@ -9,6 +9,7 @@ test('applies defaults', () => {
   assert.deepEqual(cfg, {
     nodeEnv: 'development',
     port: 3000,
+    host: '127.0.0.1',
     databaseUrl: 'postgresql://localhost:5432/x',
     model: {
       provider: 'mock',

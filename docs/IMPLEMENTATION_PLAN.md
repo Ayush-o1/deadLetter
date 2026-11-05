@@ -136,7 +136,7 @@ Exit: numbers come only from executed runs; the metamorphic test passes
 (rewording the injection leaves the permitted action set unchanged); both
 attack successes and false blocks are listed.
 
-## Phase 8 — API and persistence ☐
+## Phase 8 — API and persistence ☑
 
 Routes: runs (create, get, list, cancel), approvals (resolve), rules (tools,
 templates, trusted recipients), history (search, step detail, provenance graph),

@@ -196,6 +196,21 @@ Choice. A misleading summary to an allowed recipient, an attacker address a user
 could approve, and a request that cannot be planned in advance are in the set on
 purpose. A set containing only wins would show nothing.
 
+## D25. The server binds to loopback
+
+Choice. There are no accounts, so `HOST` defaults to `127.0.0.1`. Binding to all
+interfaces is possible by setting `HOST`, and the README says not to. No CORS
+headers are sent and there are no cookies, so a web page on another origin
+cannot use the API with the user's credentials (there are none).
+
+## D26. Steps are stored as JSON plus a few indexed columns
+
+Choice. Each step's full redacted record lives in a `Json` column; only the
+fields History searches by (`decision`, `ruleId`, `tool`, `decidedBy`, `state`)
+are real columns. That keeps the schema small while making "show me every deny"
+a plain indexed query. PostgreSQL `jsonb` does not preserve key order, so tests
+compare stored JSON structurally, not as text.
+
 ## Open questions (decide at the phase named)
 
 - Phase 5: which live provider to document first. Needs an API key from the user.

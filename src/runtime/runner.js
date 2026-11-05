@@ -438,8 +438,9 @@ export function createRunService({
     return snapshot(await load(runId));
   }
 
-  async function list() {
-    return repo.listRuns();
+  /** Run summaries for History, newest first. See summary.js for the filters. */
+  async function list(filters) {
+    return repo.listRuns(filters);
   }
 
   /** Test and evaluation helper: resolves when a started run has finished. */

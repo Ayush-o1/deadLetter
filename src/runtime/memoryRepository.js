@@ -1,17 +1,24 @@
 // An in-memory run repository, for tests and for running without a database.
-// It implements the same small interface as the Prisma repository (phase 8).
+// It implements the same interface as the Prisma repository (src/db/), and the
+// same contract test runs against both.
+//
 // `history` keeps every saved version as JSON text so tests can scan everything
 // that was ever written for private content.
+import { normalizeFilters, runMatches, summarizeRun } from './summary.js';
 
 export class InMemoryRunRepository {
   #runs = new Map();
   #steps = new Map();
   history = [];
-  /** Set to make the next writes fail, to test fail-closed behaviour. */
+  /** Set to make writes fail, to test fail-closed behaviour. */
   failWhen = null;
 
   #check(kind, payload) {
     if (this.failWhen?.(kind, payload)) throw new Error('storage unavailable');
+  }
+
+  #stepsOf(id) {
+    return [...(this.#steps.get(id)?.values() ?? [])].sort((a, b) => a.seq - b.seq);
   }
 
   async saveRun(run) {
@@ -30,18 +37,22 @@ export class InMemoryRunRepository {
 
   async getRun(id) {
     const run = this.#runs.get(id);
-    if (!run) return undefined;
-    const steps = [...(this.#steps.get(id)?.values() ?? [])].sort((a, b) => a.seq - b.seq);
-    return structuredClone({ ...run, steps });
+    return run ? structuredClone({ ...run, steps: this.#stepsOf(id) }) : undefined;
   }
 
-  async listRuns() {
+  /** @param {import('./summary.js').RunFilters} [filters] */
+  async listRuns(filters) {
+    const f = normalizeFilters(filters);
     return [...this.#runs.values()]
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map((r) => structuredClone(r));
+      .filter((run) => runMatches(run, this.#stepsOf(run.id), f))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
+      .slice(f.offset, f.offset + f.limit)
+      .map((run) => summarizeRun(run, this.#stepsOf(run.id)));
   }
 
   async listByStatus(statuses) {
-    return (await this.listRuns()).filter((r) => statuses.includes(r.status));
+    return [...this.#runs.values()]
+      .filter((r) => statuses.includes(r.status))
+      .map((run) => summarizeRun(run, this.#stepsOf(run.id)));
   }
 }

@@ -40,7 +40,7 @@ npm install                      # also generates the Prisma client
 createdb deadletter_dev
 cp .env.example .env             # then put your database user in DATABASE_URL
 npm run db:deploy                # apply migrations
-npm start                        # http://localhost:3000
+npm start                        # http://127.0.0.1:3000 (loopback only)
 ```
 
 Check it works: `curl localhost:3000/api/health` should print

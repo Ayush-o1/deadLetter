@@ -14,18 +14,75 @@ datasource db {
 
 enum RunStatus {
   planning
+  planned
   running
   awaiting_approval
   completed
+  blocked
   failed
   cancelled
   interrupted
 }
 
+// One task. Everything stored here is already redacted (see src/runtime/audit.js):
+// labels, sources and short previews, never full private content.
 model Run {
-  id        String    @id @default(uuid())
-  request   String
-  status    RunStatus @default(planning)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String    @id
+  request     String
+  status      RunStatus
+  createdAt   DateTime
+  updatedAt   DateTime
+  finishedAt  DateTime?
+  plan        Json?
+  planPreview Json
+  error       Json?
+  results     Json
+  provenance  Json?
+  events      Json
+  version     Int
+  steps       Step[]
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+// One executed step instance. `data` is the full redacted step record; the other
+// columns exist so History can search by decision, rule, tool and who decided.
+model Step {
+  runId     String
+  seq       Int
+  stepId    String
+  tool      String?
+  state     String
+  decision  String?
+  ruleId    String?
+  decidedBy String?
+  data      Json
+  run       Run     @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@id([runId, seq])
+  @@index([decision])
+  @@index([ruleId])
+  @@index([tool])
+}
+
+// Per-tool rules from the Rules tab. A tool with no row asks (fail closed).
+model ToolSetting {
+  tool      String   @id
+  enabled   Boolean
+  template  String
+  updatedAt DateTime @updatedAt
+}
+
+// Destinations the user chose to trust ("send and trust", or added in Rules).
+model TrustedDestination {
+  destination String   @id
+  createdAt   DateTime @default(now())
+}
+
+model EvalReport {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+  scenarioSet String
+  report      Json
 }

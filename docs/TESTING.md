@@ -13,7 +13,8 @@ npm run format:check
 
 `npm test` first runs `scripts/prepare-test-db.js`, which creates the test
 database if it is missing and applies migrations. Test files run one at a time
-(`--test-concurrency=1`) because they share that database.
+(`--test-concurrency=1`) because they share that database. If you run `node --test`
+on several database test files yourself, pass `--test-concurrency=1` too.
 
 ## Safety rule
 
@@ -69,6 +70,9 @@ includes the seed so the exact graph can be replayed.
 
 | Evaluation: scenario set, identical worlds across defences, **exact outcomes** of 11 attacks and 9 benign tasks per defence, data-leakage test, reproducibility, summary equals counts of recorded runs, `EVALUATION.md` equals a fresh run | `test/eval/evaluation.test.js` |
 | **Metamorphic**: 11 attacks x 8 rewordings x 2 simulated users leave deadLetter's plan, actions, decisions and status unchanged; clean-versus-attacked diff; custom attack playground | `test/eval/metamorphic.test.js` |
+
+| Repositories: **one contract run against the in-memory and the Prisma implementation** (round trip, upsert, filters, pagination, status lookup, cascade); stored rules incl. fail-closed on a missing row and on corrupted rows; stored reports | `test/integration/repositories.test.js`, `policyRepository.test.js`, `database.test.js` |
+| The whole application over HTTP on PostgreSQL: validation, scenarios A and D with approve/reject/edit/trust/cancel, rules taking effect, History search, restart recovery, flow graph, Lab, and a **database-wide scan for private content** | `test/e2e/api.test.js` (uses `test/helpers/app.js`) |
 
 The end-to-end scenarios requested in the project brief map to tests as follows:
 

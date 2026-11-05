@@ -302,18 +302,18 @@ stateDiagram-v2
 
 ## 9. Persistence (Prisma + PostgreSQL)
 
-| Table              | Holds                                                                                                                  |
-| ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| `Run`              | request, plan JSON, status, timestamps, bounded result preview                                                         |
-| `Step`             | per-step audit record: tool, argument labels and previews, rule, decision, decided by (engine / user), result or error |
-| `Approval`         | pending / resolved approval requests                                                                                   |
-| `ToolSetting`      | per-tool enabled flag and policy template                                                                              |
-| `TrustedRecipient` | addresses trusted through "send and trust"                                                                             |
-| `ProvenanceNode`   | compact label graph for the information-flow explorer                                                                  |
-| `EvalReport`       | stored evaluation reports                                                                                              |
+| Table                | Holds                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Run`                | request, plan, plan preview, status, bounded result previews, provenance graph (labels and short previews), events, error                                       |
+| `Step`               | one row per executed step instance: the full redacted step record in `data`, plus indexed `tool`, `state`, `decision`, `ruleId`, `decidedBy` for History search |
+| `ToolSetting`        | per-tool enabled flag and template (a tool with no row asks)                                                                                                    |
+| `TrustedDestination` | destinations trusted through "send and trust" or the Rules tab                                                                                                  |
+| `EvalReport`         | stored evaluation reports                                                                                                                                       |
 
-The audit log stores labels, sources and short redacted previews, never
-complete private content (ADR D14).
+The audit log stores labels, sources and short redacted previews, never complete
+private content (decisions D14, D22). Approvals are not persisted (D10).
+The run service talks to storage through a small repository interface with an
+in-memory and a Prisma implementation, held to the same contract by one test.
 
 ## 10. Evaluation harness
 
